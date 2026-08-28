@@ -84,6 +84,7 @@ export default {
         var newTodo = {
           text: this.newToDo.text,
           checked: false,
+          status: "todo",
           listId: this.id,
           desc: "",
           subTaskList: [],

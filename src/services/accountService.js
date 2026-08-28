@@ -14,4 +14,6 @@ export default {
   logout: () => request("/auth/logout", { method: "POST" }),
   me: () => request("/auth/me"),
   config: () => request("/auth/config"),
+  getData: () => request("/data"),
+  putData: (data, revision) => request("/data", { method: "PUT", body: JSON.stringify({ data, revision }) }),
 };

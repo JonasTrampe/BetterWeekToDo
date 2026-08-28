@@ -9,13 +9,7 @@ const DB_TABLES = ["todo_lists", "repeating_events", "repeating_events_by_date"]
 export default {
   export() {
     const filename = "WeekToDoOnlineBackup.wtdb";
-    const data = storageRepository.as_json();
-    DB_TABLES.forEach((table) => {
-      data[table] = {};
-    });
-
-    const dbRequest = dbRepository.open();
-    dbRequest.onsuccess = (event) => exportTable(event.target.result, data, filename, 0);
+    createBackupData().then((data) => createExportLink(filename, JSON.stringify(data)));
   },
   import(event) {
     const file = event.target.files && event.target.files[0];
@@ -31,7 +25,7 @@ export default {
     reader.onload = async () => {
       try {
         const data = validateBackup(JSON.parse(reader.result));
-        await restoreBackup(data);
+        await restoreBackupData(data);
         migrations.migrate();
         location.reload();
       } catch (_error) {
@@ -54,22 +48,6 @@ export default {
   },
 };
 
-function exportTable(db, data, filename, tableIndex) {
-  const table = DB_TABLES[tableIndex];
-  const request = dbRepository.selectAll(db, table);
-  request.onsuccess = () => {
-    const cursor = request.result;
-    if (cursor) {
-      data[table][cursor.key] = cursor.value;
-      cursor.continue();
-    } else if (tableIndex + 1 < DB_TABLES.length) {
-      exportTable(db, data, filename, tableIndex + 1);
-    } else {
-      createExportLink(filename, JSON.stringify(data));
-    }
-  };
-}
-
 function createExportLink(filename, fileBody) {
   const element = document.createElement("a");
   element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(fileBody));
@@ -83,7 +61,7 @@ function createExportLink(filename, fileBody) {
   }, 1000);
 }
 
-function validateBackup(data) {
+export function validateBackup(data) {
   if (!isRecord(data) || typeof data.config !== "string") throw new Error("Invalid backup");
 
   const config = JSON.parse(data.config);
@@ -106,7 +84,31 @@ function validateBackup(data) {
   return backup;
 }
 
-async function restoreBackup(data) {
+export async function createBackupData() {
+  const data = storageRepository.as_json();
+  DB_TABLES.forEach((table) => { data[table] = {}; });
+  const db = await new Promise((resolve, reject) => {
+    const request = dbRepository.open();
+    request.onsuccess = (event) => resolve(event.target.result);
+    request.onerror = () => reject(request.error);
+  });
+  for (let index = 0; index < DB_TABLES.length; index += 1) {
+    await new Promise((resolve, reject) => {
+      const request = dbRepository.selectAll(db, DB_TABLES[index]);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const cursor = request.result;
+        if (cursor) {
+          data[DB_TABLES[index]][cursor.key] = cursor.value;
+          cursor.continue();
+        } else resolve();
+      };
+    });
+  }
+  return data;
+}
+
+export async function restoreBackupData(data) {
   const previousStorage = storageRepository.as_json();
   storageRepository.clean();
   storageRepository.load_json(data);

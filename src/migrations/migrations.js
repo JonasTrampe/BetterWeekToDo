@@ -13,6 +13,7 @@ export default {
     v2_1_0();
     v2_2_0();
     webOnlySettings();
+    removeOnboarding();
   },
 };
 
@@ -110,4 +111,12 @@ function webOnlySettings() {
   if (!("themeMode" in config)) config.themeMode = config.darkTheme ? "dark" : "light";
   if (!("workweekOnly" in config)) config.workweekOnly = false;
   configRepository.update(config);
+}
+
+function removeOnboarding() {
+  const config = configRepository.load();
+  if ("firstTimeOpen" in config) {
+    delete config.firstTimeOpen;
+    configRepository.update(config);
+  }
 }

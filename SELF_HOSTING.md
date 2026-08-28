@@ -6,7 +6,7 @@ The production deployment has three containers:
 - `api` serves authentication and account data on port 3000.
 - `database` stores account, session, verification-token, and synced-data records in PostgreSQL.
 
-Task data remains browser-local until an authenticated sync operation is enabled. The API's `/api/data` endpoint is the server-side document store for that sync. This avoids silently uploading existing local task data when accounts are introduced.
+Task data remains browser-local until a signed-in user explicitly chooses **Upload local data** in the Account dialog. **Download account data** asks for confirmation before replacing browser-local data. PostgreSQL is the authoritative copy only after an upload; the API applies revision checks so a stale browser cannot silently overwrite another device's backup.
 
 ## Configure and start
 
@@ -39,3 +39,15 @@ Built-in login is the default. It uses bcrypt password hashes, a minimum 12-char
 Set the SMTP values for built-in registration and password resets. Registration is disabled by default; set `ALLOW_REGISTRATION=true` only while new accounts should be allowed. In production, registration is also unavailable when SMTP is not configured.
 
 OIDC is optional. Set `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, and `OIDC_CLIENT_SECRET` to expose the secondary provider endpoints at `/api/auth/oidc/login` and `/api/auth/oidc/callback`. Leave them unset to disable this route.
+
+## Backups and recovery
+
+The named PostgreSQL volume is durable across container recreation but is not a backup. Create encrypted, off-host backups and test restoration regularly:
+
+```sh
+docker compose exec -T database pg_dump -U weektodoonline -Fc weektodoonline > weektodoonline-$(date +%F).dump
+# Restore only after stopping the API and confirming the destination database.
+docker compose exec -T database pg_restore -U weektodoonline -d weektodoonline --clean --if-exists < weektodoonline-YYYY-MM-DD.dump
+```
+
+Keep the dump file and `POSTGRES_PASSWORD` out of source control. WebDAV and S3 are intentionally not enabled yet: adding either requires a separate encrypted credential model and SSRF-safe endpoint policy.

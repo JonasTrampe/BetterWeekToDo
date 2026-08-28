@@ -13,7 +13,6 @@ export default {
         themeMode: "system",
         customList: true,
         calendar: true,
-        firstTimeOpen: true,
         language: "en",
         version: version_json.version,
         checkUpdates: true,

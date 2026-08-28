@@ -7,4 +7,7 @@ export default defineConfig({
     // Preserve the existing extensionless Vue component imports during migration.
     extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json", ".vue"],
   },
+  test: {
+    include: ["tests/**/*.test.js"],
+  },
 });
