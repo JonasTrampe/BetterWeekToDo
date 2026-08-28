@@ -15,9 +15,7 @@ export default {
                 db.createObjectStore('repeating_events_by_date', {autoIncrement: false});
             }
         }
-        req.onerror = function (event) {
-            console.log('error opening database ' + event.target.errorCode);
-        }
+        req.onerror = function () {};
         return req;
     },
     get(db, table, id) {
@@ -56,5 +54,28 @@ export default {
         let store = tx.objectStore(table);
         let req = store.clear();
         return req;
+    },
+    replaceAll(db, recordsByTable) {
+        const tables = ["todo_lists", "repeating_events", "repeating_events_by_date"];
+
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(tables, "readwrite");
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error || new Error("Unable to restore backup data"));
+            tx.onabort = () => reject(tx.error || new Error("Backup restore was aborted"));
+
+            tables.forEach((table) => {
+                const store = tx.objectStore(table);
+                store.clear();
+                Object.entries(recordsByTable[table]).forEach(([key, value]) => store.put(value, key));
+            });
+        });
+    },
+    clearAll(db) {
+        return this.replaceAll(db, {
+            todo_lists: {},
+            repeating_events: {},
+            repeating_events_by_date: {},
+        });
     }
 };

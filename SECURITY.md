@@ -1,16 +1,11 @@
-# Security
+# Security policy
 
-We value your privacy by giving you complete control over your data.
+WeekToDoOnline is intended for self-hosting behind TLS. Report vulnerabilities privately to the operator or repository maintainer; do not include exploit details in a public issue.
 
-If you use WeekToDo all data is saved on your device locally and is never sent to our server. We do not collect any personal data either.
+## Data handling
 
-WeekToDo only connects to the internet for the next reasons:
+Without an account, planner data is stored only in the browser's local storage and IndexedDB for that origin. Clearing browser-site data deletes that local copy unless the user exported a backup.
 
-- Get the sponsor data that show up when the app is loading
-- Send a request to a public counter for sponsor impressions
-- Periodically check for new updates
-- Send error report in case of error
+When the included API is enabled, account records, password hashes, sessions, verification/reset tokens, and server-side planner documents are stored in the configured PostgreSQL database. The database volume is persistent, local to the Docker host unless the operator configures external PostgreSQL or backups.
 
-You can disable this features in Settings -> General.
-
-If you request a sponsorship of WeekToDo, you will need to provide your email address. We do not share your email address with anybody, and we will only send information related with the sponsorship.
+The operator must set a strong `POSTGRES_PASSWORD`, publish only the HAProxy listener, configure HTTPS, and keep registration disabled unless it is needed. See [SELF_HOSTING.md](SELF_HOSTING.md).
