@@ -5,7 +5,7 @@
       src="/img/logo-color.svg"
       width="42"
       height="42"
-      alt="WeekTodo Logo"
+      alt="WeekToDoOnline logo"
       data-bs-toggle="modal"
       data-bs-target="#aboutModal"
       :title="$t('about.about')"
@@ -15,22 +15,14 @@
       src="/img/logo-white.svg"
       width="42"
       height="42"
-      alt="WeekTodo Logo"
+      alt="WeekToDoOnline logo"
       data-bs-toggle="modal"
       data-bs-target="#aboutModal"
       :title="$t('about.about')"
     />
     <i v-if="showCalendar" class="bi-house" @click="setTodayDate" :title="$t('ui.today')"></i>
-    <datepicker
-      v-if="datepickerEnabled"
-      id="side-bar-date-picker-input"
-      v-model="pickedDate"
-      :locale="language"
-      :weekStartsOn="weekStartOnMonday"
-    />
-    <i v-if="showCalendar" class="bi-calendar-event" @click="changeDate" :title="$t('ui.calendar')"> </i>
-    <!-- <i class="bi-search" :title="$t('donate.supportUs')"></i>
-    <i class="bi-filter" :title="$t('donate.supportUs')" ></i> -->
+    <i v-if="showCalendar" class="bi-calendar-event" data-bs-toggle="modal" data-bs-target="#monthOverviewModal"
+      :title="$t('ui.calendar')"> </i>
     <i
       v-if="showCalendar"
       class="bi-arrow-repeat"
@@ -57,13 +49,11 @@
           </button>
         </li>
         <li>
-          <hr class="dropdown-divider" />
+          <button class="dropdown-item" type="button" @click="$emit('openAccount')">
+            <i class="bi-person-circle"></i> <span>Account</span>
+          </button>
         </li>
-        <li>
-          <a href="https://weektodo.me/support-us" target="_blank" class="dropdown-item" type="button">
-            <i class="bi-gift"></i> <span>{{ $t("donate.supportUs") }}</span>
-          </a>
-        </li>
+        <li><hr class="dropdown-divider" /></li>
         <li>
           <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#aboutModal">
             <i class="bi-info-circle"></i> <span>{{ $t("about.about") }}</span>
@@ -72,7 +62,6 @@
       </ul>
     </div>
 
-    <!-- <i class="bi-person-circle" :title="$t('donate.supportUs')" @click="openDonateModal"></i> -->
     <i class="bi-info-square" data-bs-toggle="modal" data-bs-target="#tipsModal" :title="$t('tips.tips')"></i>
     <i
       class="bi-gear"
@@ -88,21 +77,10 @@
 import moment from "moment";
 import customToDoListIdsRepository from "../../repositories/customToDoListIdsRepository";
 import toDoListRepository from "../../repositories/toDoListRepository";
-import Datepicker from "vue3-datepicker";
-import languageHelper from "../../helpers/languageHelper.js";
 
 export default {
   name: "sideBar",
-  emits: ["changeDate"],
-  components: {
-    Datepicker,
-  },
-  data() {
-    return {
-      pickedDate: new Date(),
-      datepickerEnabled: false,
-    };
-  },
+  emits: ["changeDate", "openAccount"],
   mounted() {
     window.addEventListener("beforeprint", () => {
       document.getElementById("app-container").classList.add("ready-to-print");
@@ -117,17 +95,6 @@ export default {
     });
   },
   methods: {
-    changeDate: function () {
-      this.datepickerEnabled = true;
-      this.$nextTick(function () {
-        document.getElementById("side-bar-date-picker-input").click();
-        document.getElementById("side-bar-date-picker-input").focus();
-        document.getElementById("side-bar-date-picker-input").addEventListener("focusout", this.resetDatePicker);
-        document.getElementById("side-bar-date-picker-input").onkeydown = function (evt) {
-          evt.keyCode == 27 && document.getElementById("side-bar-date-picker-input").blur();
-        };
-      });
-    },
     setTodayDate: function () {
       this.$emit("changeDate", moment().format("YYYYMMDD"));
     },
@@ -138,28 +105,11 @@ export default {
       customToDoListIdsRepository.update(this.$store.getters.cTodoListIds);
       toDoListRepository.update(customTodoListId.listId, this.$store.getters.todoLists[customTodoListId.listId]);
     },
-    resetDatePicker: function () {
-      document.getElementById("side-bar-date-picker-input").removeEventListener("focusout", this.resetDatePicker);
-      this.datepickerEnabled = false;
-    },
     openConfigModal: function () {
       document.getElementById("config-general-tab").click();
     },
-    openDonateModal: function () {
-      window.open("https://weektodo.me/support-us", "_blank");
-    },
     print: function () {
       window.print();
-    },
-  },
-  watch: {
-    pickedDate: function (val) {
-      if (this.datepickerEnabled) {
-        document.getElementById("side-bar-date-picker-input").removeEventListener("focusout", this.resetDatePicker);
-        this.datepickerEnabled = false;
-        this.$emit("changeDate", moment(val).format("YYYYMMDD"));
-        this.pickedDate = new Date();
-      }
     },
   },
   computed: {
@@ -168,13 +118,6 @@ export default {
     },
     showCalendar: function () {
       return this.$store.getters.config.calendar;
-    },
-    weekStartOnMonday: function () {
-      return this.$store.getters.config.weekStartOnMonday ? 1 : 0;
-    },
-    language: function () {
-      let lang = this.$store.getters.config.language;
-      return languageHelper.getLanguagePack(lang);
     },
   },
 };

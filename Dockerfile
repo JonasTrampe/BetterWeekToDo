@@ -1,8 +1,21 @@
-FROM node:16-alpine
+# Build the static Vue application. This image is not used at runtime.
+FROM node:22-alpine AS build
+
 WORKDIR /app
-COPY package.json /app
-COPY yarn.lock /app
-RUN yarn install --frozen-lockfile && yarn cache clean
-COPY . /app
-CMD yarn run serve
+
+COPY package.json yarn.lock ./
+RUN corepack enable \
+    && corepack prepare yarn@1.22.22 --activate \
+    && yarn install --frozen-lockfile --ignore-engines \
+    && yarn cache clean
+
+COPY . .
+RUN yarn build
+
+# HAProxy terminates TLS and proxies HTTP to this unprivileged static server.
+FROM nginxinc/nginx-unprivileged:1.28-alpine
+
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
 EXPOSE 8080

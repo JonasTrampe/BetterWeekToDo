@@ -3,7 +3,7 @@
   <div v-show="compatible" id="app-container" class="app-container" :class="{ 'dark-theme': darkTheme }">
     <div class="hidden-mobile app-body" :style="{ zoom: `${zoom}%` }">
       <splash-screen ref="splash"></splash-screen>
-      <side-bar @change-date="setSelectedDate"></side-bar>
+      <side-bar @change-date="setSelectedDate" @open-account="showAccountModal"></side-bar>
 
       <div class="h-100 d-flex flex-column">
         <div
@@ -101,8 +101,8 @@
         </div>
 
         <div v-show="!showCustomList && !showCalendar" style="margin: auto">
-          <img v-if="darkTheme" src="img/WeekToDoDarkLogo.webp" />
-          <img v-else src="img/WeekToDoLightLogo.webp" />
+          <img v-if="darkTheme" src="/img/WeekToDoDarkLogo.webp" />
+          <img v-else src="/img/WeekToDoLightLogo.webp" />
         </div>
       </div>
 
@@ -111,7 +111,8 @@
       <clear-data-modal></clear-data-modal>
       <clear-list-modal></clear-list-modal>
       <about-modal></about-modal>
-      <donate-modal></donate-modal>
+      <month-overview-modal :selected-date="selected_date" @change-date="setSelectedDate"></month-overview-modal>
+      <account-modal ref="accountModal"></account-modal>
       <welcome-modal></welcome-modal>
       <tips-modal></tips-modal>
       <to-do-modal :selectedTodo="selectedTodo"></to-do-modal>
@@ -128,21 +129,6 @@
     </div>
 
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1056">
-      <toast-message
-        id="versionChanges"
-        :text="$t('ui.softwareUpdated')"
-        :sub-text="$t('ui.seeChanges')"
-        @subTextClick="seeChangeLog"
-      ></toast-message>
-
-      <toast-message
-        id="newVersionAvailable"
-        :text="$t('ui.newVersionAvailable')"
-        :sub-text="$t('ui.download')"
-        @subTextClick="downloadNewVersion"
-      ></toast-message>
-
-      <toast-message id="copiedAddress" :text="$t('donate.copiedAddres')"></toast-message>
     </div>
   </div>
   <div v-if="!compatible" class="compatible d-flex flex-column justify-content-center align-items-center p-5">
@@ -161,15 +147,14 @@ import configModal from "./views/configModal";
 import splashScreen from "./components/splashScreen";
 import configRepository from "./repositories/configRepository";
 import aboutModal from "./views/aboutModal";
-import donateModal from "./views/donateModal";
+import accountModal from "./views/accountModal";
+import monthOverviewModal from "./views/monthOverviewModal";
 import welcomeModal from "./views/welcomeModal";
 import toDoModal from "./views/toDoModal/toDoModal";
 import tipsModal from "./views/tipsModal";
-import { Modal, Toast } from "bootstrap";
+import { Modal } from "bootstrap";
 import migrations from "./migrations/migrations";
 import version_json from "../public/version.json";
-import isElectron from "is-electron";
-import taskHelper from "./helpers/tasksHelper";
 import notifications from "./helpers/notifications";
 import clearDataModal from "./components/comfirmModals/clearDataModal.vue";
 import clearListModal from "./components/comfirmModals/clearListModal.vue";
@@ -178,20 +163,20 @@ import RecurrentEventsModal from "./views/RecurrentEventsModal.vue";
 import repeatingEventRepository from "./repositories/repeatingEventRepository";
 import toDoListRepository from "./repositories/toDoListRepository";
 import ReorderCustomListsModal from "./views/ReorderCustomListsModal.vue";
-import toastMessage from "./components/toastMessage";
 import activeToDo from "./components/activeToDo.vue";
 import tasksHelper from "./helpers/tasksHelper";
 
 export default {
   name: "App",
   components: {
-    donateModal,
     configModal,
     toDoList,
     sideBar,
     removeCustomList,
     splashScreen,
     aboutModal,
+    accountModal,
+    monthOverviewModal,
     welcomeModal,
     tipsModal,
     toDoModal,
@@ -200,7 +185,6 @@ export default {
     importingModal,
     ReorderCustomListsModal,
     clearListModal,
-    toastMessage,
     activeToDo,
   },
   data() {
@@ -208,10 +192,11 @@ export default {
       selected_date: null,
       cTodoList: this.$store.getters.cTodoListIds,
       calendarHeight: "calc(50% - 50px)",
-      ipcRenderer: null,
       initialLoadCompleted: false,
       initialListToLoad: 0,
       initialListLoaded: 0,
+      systemPrefersDark: false,
+      systemThemeQuery: null,
     };
   },
   beforeCreate() {
@@ -245,30 +230,26 @@ export default {
     this.$refs.weekListContainer.scrollLeft = this.todoListWidth();
     this.calendarHeight = this.$store.getters.config.calendarHeight;
     window.addEventListener("resize", this.weekResetScroll);
+    this.systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    this.systemThemeQuery.addEventListener("change", this.updateSystemTheme);
+    this.systemPrefersDark = this.systemThemeQuery.matches;
     document.onreadystatechange = () => {
       if (document.readyState == "complete") {
         setTimeout(this.hideSplash, 4500);
       }
     };
 
-    if (isElectron()) {
-      const { ipcRenderer } = require("electron");
-      this.ipcRenderer = ipcRenderer;
-      if (this.$store.getters.config.firstTimeOpen) this.ipcRenderer.send("show-current-window");
-      this.ipcRenderer.send("match-open-on-startup", this.$store.getters.config.openOnStartup);
-    }
-
     if (this.$store.getters.config.importing) {
       this.$store.commit("updateConfig", { val: false, key: "importing" });
       configRepository.update(this.$store.getters.config);
-      if (isElectron()) {
-        this.syncElectronConfig();
-      }
     }
 
     this.resetAppOnDayChange();
   },
   methods: {
+    updateSystemTheme: function (event) {
+      this.systemPrefersDark = event.matches;
+    },
     weekMoveLeft: function () {
       this.selected_date = moment(this.selected_date).subtract(1, "d").format("YYYYMMDD");
       this.$refs.weekListContainer.scrollLeft = this.todoListWidth() * 2;
@@ -325,18 +306,8 @@ export default {
           .focus();
       });
     },
-    isElectron: function () {
-      let isElectron = require("is-electron");
-      return isElectron();
-    },
     hideSplash: function () {
-      if (this.isElectron()) {
-        if (this.ipcRenderer.sendSync("is-windows-visible")) {
-          this.$refs.splash.hideSplash();
-        }
-      } else {
-        this.$refs.splash.hideSplash();
-      }
+      this.$refs.splash.hideSplash();
       this.checksOnLoadApp();
       if (this.$store.getters.config.firstTimeOpen) {
         this.showWelcomeModal();
@@ -349,6 +320,9 @@ export default {
       modal.show();
       this.$store.commit("updateConfig", { val: false, key: "firstTimeOpen" });
       configRepository.update(this.$store.getters.config);
+    },
+    showAccountModal: function () {
+      this.$refs.accountModal.open();
     },
     compatible: function () {
       return window.IndexedDB;
@@ -398,53 +372,13 @@ export default {
               this.refreshTodayNotifications();
               this.$store.commit("updateConfig", { val: moment().format("YYYYMMDD"), key: "lastDayOpened" });
               configRepository.update(this.$store.getters.config);
-              if (isElectron()) this.showInitialNotification();
             });
           } else {
             this.refreshTodayNotifications();
-            if (isElectron()) this.showInitialNotification();
             this.$store.commit("updateConfig", { val: moment().format("YYYYMMDD"), key: "lastDayOpened" });
             configRepository.update(this.$store.getters.config);
           }
         }
-      }
-    },
-    showInitialNotification: function () {
-      if (!(this.$store.getters.config.notificationOnStartup && !this.$store.getters.config.firstTimeOpen)) return;
-      setTimeout(
-        function () {
-          new Notification("WeekToDo", {
-            body: this.initialNotificationText(),
-            icon: "/favicon.ico",
-            silent: true,
-          }).onclick = () => {
-            this.ipcRenderer.send("show-current-window");
-            setTimeout(() => {
-              if (document.getElementById("splashScreen")) {
-                document.getElementById("splashScreen").classList.add("hiddenSplashScreen");
-              }
-            }, 3000);
-          };
-          notifications.playNotificationSound(this.$store.getters.config.notificationSound);
-        }.bind(this),
-        2000
-      );
-    },
-    initialNotificationText: function () {
-      let yesterdayTasks = this.$store.getters.todoLists[moment().subtract(1, "d").format("YYYYMMDD")];
-      let todayTasks = this.$store.getters.todoLists[moment().format("YYYYMMDD")];
-
-      let yesterayPendingTasksCount = taskHelper.pendingTasksCount(yesterdayTasks);
-      let todayPendingTasksCount = taskHelper.pendingTasksCount(todayTasks);
-
-      if (yesterayPendingTasksCount == 0 && todayPendingTasksCount == 0) {
-        return this.$t("notifications.noPendingTasksToday");
-      } else if (yesterayPendingTasksCount == 0) {
-        return this.$t("notifications.pendingTasksToday", [todayPendingTasksCount]);
-      } else if (todayPendingTasksCount == 0) {
-        return this.$t("notifications.pendingTasksYesterday", [yesterayPendingTasksCount]);
-      } else {
-        return this.$t("notifications.pendingTasksYesterdayAndToday", [yesterayPendingTasksCount, todayPendingTasksCount]);
       }
     },
     resetAppOnDayChange: function () {
@@ -454,9 +388,6 @@ export default {
 
       setTimeout(
         function () {
-          if (isElectron() && !this.ipcRenderer.sendSync("is-windows-visible")) {
-            window.location.reload();
-          }
           this.refreshTodayNotifications();
           this.resetAppOnDayChange();
         }.bind(this),
@@ -503,57 +434,27 @@ export default {
       if (version_json.version != this.$store.getters.config.version) {
         this.$store.commit("updateConfig", { val: version_json.version, key: "version" });
         configRepository.update(this.$store.getters.config);
-        var toast = new Toast(document.getElementById("versionChanges"));
-        toast.show();
-      }
-    },
-    checkForUpdates: function () {
-      if (this.isElectron() && this.$store.getters.config.checkUpdates) {
-        const axios = require("axios").default;
-        axios
-          .get("https://app.weektodo.me/version.json")
-          .then((response) => this.showNewVersionToast(response))
-          .catch((error) => console.log(error.message));
       }
     },
     checksOnLoadApp: function () {
-      if (this.isElectron()) {
-        require("electron").ipcRenderer.on("initial-checks", () => {
-          this.checkVersion();
-          this.checkForUpdates();
-        });
-      } else {
-        this.checkVersion();
-      }
-    },
-    showNewVersionToast: function (response) {
-      if (response.data.version != version_json.version) {
-        var toast = new Toast(document.getElementById("newVersionAvailable"));
-        toast.show();
-      }
-    },
-    downloadNewVersion: function () {
-      let isElectron = require("is-electron");
-      if (isElectron()) {
-        require("electron").shell.openExternal("https://weektodo.me", "_blank");
-      } else {
-        window.open("https://weektodo.me", "_blank");
-      }
-    },
-    seeChangeLog: function () {
-      window.open("https://weektodo.me/changelog", "_blank");
-    },
-    syncElectronConfig: function () {
-      const { ipcRenderer } = require("electron");
-      ipcRenderer.send("set-tray-context-menu-label", { open: this.$t("ui.open"), quit: this.$t("ui.quit") });
-      ipcRenderer.send("set-open-on-startup", this.$store.getters.config.openOnStartup);
-      ipcRenderer.send("set-run-in-background", this.$store.getters.config.runInBackground);
-      ipcRenderer.send("set-dark-tray-icon", this.$store.getters.config.darkTrayIcon);
+      this.checkVersion();
     },
   },
   computed: {
     dates_array: function () {
       if (!this.selected_date) return [];
+      if (this.workweekOnly) {
+        const dates = [];
+        let date = moment(this.selected_date);
+        while (date.day() === 0 || date.day() === 6) date.add(1, "d");
+        dates.push(date.clone().subtract(1, "weekday").format("YYYYMMDD"));
+        for (let i = 0; i < this.columns; i++) {
+          dates.push(date.clone().add(i, "weekday").format("YYYYMMDD"));
+        }
+        dates.push(date.clone().add(this.columns, "weekday").format("YYYYMMDD"));
+        this.$store.commit("updateSelectedDates", dates);
+        return dates;
+      }
       var dates_array = [moment(this.selected_date).subtract(1, "d").format("YYYYMMDD"), this.selected_date];
 
       for (let i = 1; i < this.columns; i++) {
@@ -585,7 +486,12 @@ export default {
       return this.$store.getters.config.zoom;
     },
     darkTheme: function () {
-      return this.$store.getters.config.darkTheme;
+      const mode = this.$store.getters.config.themeMode;
+      if (mode === "system") return this.systemPrefersDark;
+      return mode ? mode === "dark" : this.$store.getters.config.darkTheme;
+    },
+    workweekOnly: function () {
+      return this.$store.getters.config.workweekOnly;
     },
     resizableStyle: function () {
       if (this.showCalendar && this.showCustomList) {

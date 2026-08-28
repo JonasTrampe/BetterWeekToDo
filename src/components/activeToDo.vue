@@ -129,6 +129,9 @@ export default {
       if (!e.target.value) subTask.checked = !subTask.checked;
       var todoList = this.activeTodo.toDo.subTaskList;
       if (subTask.checked && this.moveSubtaskToBotttom) { todoList.push(todoList.splice(index, 1)[0]); }
+      if (todoList.length && todoList.every((task) => task.checked)) {
+        this.$store.getters.todoLists[this.activeTodo.toDoListId][this.activeTodo.index].checked = true;
+      }
       toDoListRepository.update(this.activeTodo.toDoListId, this.$store.getters.todoLists[this.activeTodo.toDoListId]);
     },
     timeFormat: function (date) {

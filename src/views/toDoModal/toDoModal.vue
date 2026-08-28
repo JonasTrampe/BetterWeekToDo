@@ -479,6 +479,9 @@ export default {
       if (this.todo.subTaskList[index].checked && this.moveSubtaskToBotttom) {
         this.todo.subTaskList.push(this.todo.subTaskList.splice(index, 1)[0]);
       }
+      if (this.todo.subTaskList.length && this.todo.subTaskList.every((task) => task.checked)) {
+        this.todo.checked = true;
+      }
       this.updateTodo();
     },
     linkifyText: function (text) {

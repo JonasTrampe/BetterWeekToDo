@@ -1,7 +1,7 @@
 <template>
   <div class="row">
     <div class="col-md-4">
-      <img class="logo info-image" src="WeekToDo-Logo-Color.svg" alt="WeekToDo" title="WeekToDo Logo" width="110" />
+      <img class="logo info-image" src="/WeekToDo-Logo-Color.svg" alt="WeekToDoOnline" title="WeekToDoOnline logo" width="110" />
     </div>
     <div class="col-md-8">
       <div>
@@ -58,7 +58,6 @@ export default {
   data() {
     return {
       language: this.$store.getters.config.language,
-      isElectron: require("is-electron"),
     };
   },
   methods: {
@@ -67,11 +66,6 @@ export default {
         this.$store.commit("updateConfig", { val: this.language, key: "language" });
         configRepository.update(this.$store.getters.config);
         this.$i18n.locale = this.language;
-
-        if (this.isElectron()) {
-          const { ipcRenderer } = require("electron");
-          ipcRenderer.send("set-tray-context-menu-label", { open: this.$t("ui.open"), quit: this.$t("ui.quit") });
-        }
       });
     },
     next: function () {

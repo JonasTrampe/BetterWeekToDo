@@ -4,14 +4,16 @@
     <div class="todo-item-container" :class="{ 'compact-view': compactView }" ref="itemContainer">
       <div v-if="!editing" class="inline-todo-item d-flex flex-column" @mouseenter="showToDoItem">
         <div class="d-flex">
-          <span class="noselect item-text" :class="{ 'checked-todo': toDo.checked, 'compact-view': compactView }"
-            style="flex-grow: 1">
+          <button class="todo-check" type="button" :aria-label="toDo.checked ? 'Mark task incomplete' : 'Mark task complete'"
+            @click.stop="toggleTodo">
             <span v-if="toDo.color != 'none'" class="cicle-icon" :style="'color: ' + toDo.color" :class="{
               'bi-check-circle-fill': toDo.checked,
               'bi-circle-fill': !toDo.checked,
             }"></span>
-            <span v-else class="cicle-icon"
-              :class="{ 'bi-check-circle': toDo.checked, 'bi-circle': !toDo.checked, }"></span>
+            <span v-else class="cicle-icon" :class="{ 'bi-check-circle': toDo.checked, 'bi-circle': !toDo.checked }"></span>
+          </button>
+          <span class="noselect item-text" :class="{ 'checked-todo': toDo.checked, 'compact-view': compactView }"
+            style="flex-grow: 1">
             <span v-html="todoText"></span>
             <span v-if="!compactView" class="item-time mx-2" :class="{ 'checked-todo': toDo.checked }"> {{
                 timeFormat(toDo.time)
@@ -51,6 +53,14 @@ export default {
     };
   },
   methods: {
+    toggleTodo: function () {
+      this.$store.commit("checkTodo", { toDoListId: this.toDoListId, index: this.index });
+      const todoList = this.$store.getters.todoLists[this.toDoListId];
+      if (todoList[this.index].checked && this.$store.getters.config.moveCompletedTaskToBottom) {
+        this.$store.commit("moveTodoToEnd", { toDoListId: this.toDoListId, index: this.index });
+      }
+      toDoListRepository.update(this.toDoListId, todoList);
+    },
     editToDo: function () {
       this.text = this.toDo.text;
       this.editing = true;
@@ -145,6 +155,13 @@ export default {
   &:focus {
     outline: none;
   }
+}
+
+.todo-check {
+  background: transparent;
+  border: 0;
+  padding: 2px 0 2px 7px;
+  line-height: 1.3rem;
 }
 
 .item-text {

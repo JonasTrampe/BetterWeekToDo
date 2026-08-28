@@ -10,6 +10,7 @@ export default {
     } else {
       let default_config = {
         darkTheme: false,
+        themeMode: "system",
         customList: true,
         calendar: true,
         firstTimeOpen: true,
@@ -38,6 +39,7 @@ export default {
         moveCompletedSubTaskToBottom: true,
         fullscreenToDoModal: false,
         weekStartOnMonday: true,
+        workweekOnly: false,
         lastDayOpened: moment().format("YYYY-MM-DD")
       };
       storageRepository.set("config", default_config);

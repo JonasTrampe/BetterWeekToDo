@@ -64,6 +64,11 @@
                   <input class="form-check-input" type="checkbox" id="calendarSetting" v-model="configData.calendar"
                     @change="changeConfig('calendar', configData.calendar)" />
                 </div>
+                <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
+                  <label class="form-check-label flex-fill" for="workweekOnly">Workweek only</label>
+                  <input class="form-check-input" type="checkbox" id="workweekOnly" v-model="configData.workweekOnly"
+                    @change="changeConfig('workweekOnly', configData.workweekOnly)" />
+                </div>
 
                 <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
                   <label class="form-check-label flex-fill" for="customListsSetting">{{ $t("settings.customLists")
@@ -72,33 +77,6 @@
                     @change="changeConfig('customList', configData.customList)" />
                 </div>
 
-                <div v-if="isElectron()" class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
-                  <label class="form-check-label" for="updatesCheckSetting">{{
-                    $t("settings.checkUpdates")
-                  }}</label>
-                  <input class="form-check-input" type="checkbox" id="updatesCheckSetting"
-                    v-model="configData.checkUpdates" @change="changeConfig('checkUpdates', configData.checkUpdates)" />
-                </div>
-
-                <div v-if="isElectron()" class=" form-check form-switch d-flex px-1 mb-3 justify-content-between">
-                  <label class="form-check-label" for="openOnStartup">{{
-                    $t("settings.openOnStartup")
-                  }}</label>
-                  <input class="form-check-input" type="checkbox" id="openOnStartup" v-model="configData.openOnStartup"
-                    @change="setOpenOnStart()" />
-                </div>
-                <div v-if="isElectron()" class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
-                  <label class="form-check-label" for="runInBackground">
-                    <span>
-                      {{ $t("settings.runInBackground") }}
-                      <sup>
-                        <i class="bi-info-circle" style="cursor: help" :title="$t('settings.runInBackgroundInfo')"> </i>
-                      </sup>
-                    </span>
-                  </label>
-                  <input class="form-check-input" type="checkbox" id="runInBackground"
-                    v-model="configData.runInBackground" @change="setRunInBackground()" />
-                </div>
 
                 <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
                   <label class="form-check-label flex-fill" for="reportErrors">{{ $t("settings.reportErrors")
@@ -158,21 +136,16 @@
               <div class="d-flex flex-column mt-2 h-100">
 
 
-                <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
-                  <label class="form-check-label" for="darkThemeSetting">{{
-                    $t("settings.darkTheme")
-                  }}</label>
-                  <input class="form-check-input" type="checkbox" id="darkThemeSetting" v-model="configData.darkTheme"
-                    @change="changeConfig('darkTheme', configData.darkTheme)" />
+                <div class="px-1 mb-3">
+                  <label class="form-check-label" for="themeMode">Theme</label>
+                  <select id="themeMode" class="form-select" v-model="configData.themeMode"
+                    @change="changeConfig('themeMode', configData.themeMode)">
+                    <option value="system">System</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                  </select>
                 </div>
 
-                <div v-if="isElectron()" class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
-                  <label class="form-check-label" for="darkTrayIcon">{{
-                    $t("settings.darkIcon")
-                  }}</label>
-                  <input class="form-check-input" type="checkbox" id="darkTrayIcon" v-model="configData.darkTrayIcon"
-                    @change="setDarkTrayIcon" />
-                </div>
                 <div class="horizontal-divider mb-3"></div>
                 <div class="px-1 mb-3">
                   <label for="columnsConfig" class="form-check-label">{{ $t("settings.columns") }}: {{
@@ -217,14 +190,6 @@
             </div>
             <div class="tab-pane fade" id="config-notifications">
               <div class="d-flex flex-column mt-3 h-100">
-                <div v-if="isElectron()" class="orm-check form-switch d-flex px-0 mb-3  justify-content-between">
-                  <label class="form-check-label" style="margin-left: 0px" for="notificationOnStartup">{{
-                    $t("settings.notificationOnStartup")
-                  }}</label>
-                  <input class="form-check-input" type="checkbox" id="notificationOnStartup"
-                    v-model="configData.notificationOnStartup"
-                    @change="changeConfig('notificationOnStartup', configData.notificationOnStartup)" />
-                </div>
 
                 <div class="form-check form-switch d-flex px-0 mb-3  justify-content-between">
                   <label class="form-check-label" style="margin-left: 0px" for="notificationIndicator">{{
@@ -383,49 +348,14 @@ export default {
       importingModal.show();
       exportTool.import(event);
     },
-    isElectron: function () {
-      let isElectron = require("is-electron");
-      return isElectron();
-    },
     goHome: function () {
       document.getElementById("config-home-tab").click();
     },
-    setOpenOnStart: function () {
-      this.changeConfig("openOnStartup", this.configData.openOnStartup);
-      this.$nextTick(function () {
-        if (this.isElectron()) {
-          const { ipcRenderer } = require('electron');
-          ipcRenderer.send('set-open-on-startup', this.configData.openOnStartup);
-        }
-      });
-    },
-    setRunInBackground: function () {
-      this.changeConfig("runInBackground", this.configData.runInBackground);
-      this.$nextTick(function () {
-        if (this.isElectron()) {
-          const { ipcRenderer } = require('electron');
-          ipcRenderer.send('set-run-in-background', this.configData.runInBackground);
-        }
-      });
-    },
     setLanguage: function () {
       this.changeConfig('language', this.configData.language);
-      this.$nextTick(function () {
-        if (this.isElectron()) {
-          const { ipcRenderer } = require('electron');
-          ipcRenderer.send('set-tray-context-menu-label', { open: this.$t("ui.open"), quit: this.$t("ui.quit") });
-        }
-      });
     },
     setSendErrors: function () {
       this.changeConfig('reportErrors', this.configData.reportErrors);
-    },
-    setDarkTrayIcon: function () {
-      this.changeConfig('darkTrayIcon', this.configData.darkTrayIcon);
-      this.$nextTick(function () {
-        const { ipcRenderer } = require('electron');
-        ipcRenderer.send('set-dark-tray-icon', this.configData.darkTrayIcon);
-      });
     },
     playSound: function () {
       notifications.playNotificationSound(

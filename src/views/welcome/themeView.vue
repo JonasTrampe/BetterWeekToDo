@@ -33,7 +33,6 @@
 
 <script>
 import configRepository from "../../repositories/configRepository";
-import isElectron from "is-electron";
 
 export default {
   name: "languageView",
@@ -50,11 +49,7 @@ export default {
       });
     },
     next: function () {
-      if (isElectron()) {
-        document.getElementById('welcome-2-1-tab').click();
-      } else {
-        document.getElementById('welcome-3-tab').click();
-      }
+      document.getElementById('welcome-3-tab').click();
     },
     back: function () {
       document.getElementById('welcome-1-tab').click();

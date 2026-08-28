@@ -15,7 +15,7 @@
 <script>
 
     export default {
-        name: "donateModal",
+        name: "linkList",
         data() {
             return {
             }
@@ -38,15 +38,10 @@
                 }
             },
             emailLink: function (link) {
-                window.open(link);
+                window.open(link, '_blank', 'noopener,noreferrer');
             },
             externaLink: function (link) {
-                let isElectron = require("is-electron");
-                if (isElectron()) {
-                    require('electron').shell.openExternal(link, '_blank');
-                } else {
-                    window.open(link, '_blank');
-                }
+                window.open(link, '_blank', 'noopener,noreferrer');
             },
             tagIdLink: function (id) {
                 document.getElementById(id).click();
