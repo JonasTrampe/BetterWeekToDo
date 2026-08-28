@@ -70,6 +70,7 @@ import toDoListRepository from "../repositories/toDoListRepository";
 import customToDoListIdsRepository from "../repositories/customToDoListIdsRepository";
 import notifications from "../helpers/notifications";
 import tasksHelper from "../helpers/tasksHelper";
+import { isTaskDone } from "../helpers/taskStatus";
 import { Toast } from 'bootstrap';
 
 export default {
@@ -128,7 +129,7 @@ export default {
     allTodoChecked: function () {
       let allChecked = true;
       this.toDoList.forEach(function (todo) {
-        if (!todo.checked) {
+        if (!isTaskDone(todo)) {
           allChecked = false;
           return;
         }

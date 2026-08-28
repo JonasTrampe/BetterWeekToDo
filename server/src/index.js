@@ -285,7 +285,7 @@ app.get("/api/auth/oidc/callback", async (request, response, next) => {
   if (!config.oidcIssuer) return response.status(404).end();
   try {
     const stateAccepted = await consumeToken(String(request.query.state || ""), "oidc_state");
-    if (stateAccepted !== null) throw new Error("Invalid OIDC state");
+    if (!stateAccepted) throw new Error("Invalid OIDC state");
     const metadata = await getOidcMetadata();
     const tokenResponse = await fetch(metadata.token_endpoint, {
       method: "POST",

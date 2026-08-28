@@ -36,6 +36,7 @@ function create_todo(vue, list_id, text, checked, desc = "", subTaskList = [], c
     var newTodo = {
         text: text,
         checked: checked,
+        status: checked ? "done" : "todo",
         listId: list_id,
         desc: desc,
         subTaskList: subTaskList,

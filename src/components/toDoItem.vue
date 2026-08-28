@@ -4,13 +4,14 @@
     <div class="todo-item-container" :class="{ 'compact-view': compactView }" ref="itemContainer">
       <div v-if="!editing" class="inline-todo-item d-flex flex-column" @mouseenter="showToDoItem">
         <div class="d-flex">
-          <button class="todo-check" type="button" :aria-label="toDo.checked ? 'Mark task incomplete' : 'Mark task complete'"
+          <button class="todo-check" type="button" :aria-label="statusLabel"
             @click.stop="toggleTodo">
             <span v-if="toDo.color != 'none'" class="cicle-icon" :style="'color: ' + toDo.color" :class="{
-              'bi-check-circle-fill': toDo.checked,
-              'bi-circle-fill': !toDo.checked,
+              'bi-check-circle-fill': isDone,
+              'bi-dash-circle-fill': isInProgress,
+              'bi-circle-fill': !isDone && !isInProgress,
             }"></span>
-            <span v-else class="cicle-icon" :class="{ 'bi-check-circle': toDo.checked, 'bi-circle': !toDo.checked }"></span>
+            <span v-else class="cicle-icon" :class="{ 'bi-check-circle': isDone, 'bi-dash-circle': isInProgress, 'bi-circle': !isDone && !isInProgress }"></span>
           </button>
           <span class="noselect item-text" :class="{ 'checked-todo': toDo.checked, 'compact-view': compactView }"
             style="flex-grow: 1">
@@ -36,6 +37,7 @@
 import toDoListRepository from "../repositories/toDoListRepository";
 import moment from "moment";
 import linkifyStr from 'linkify-string';
+import { TASK_STATUS, taskStatus } from "../helpers/taskStatus";
 
 export default {
   components: {},
@@ -54,9 +56,9 @@ export default {
   },
   methods: {
     toggleTodo: function () {
-      this.$store.commit("checkTodo", { toDoListId: this.toDoListId, index: this.index });
+      this.$store.commit("advanceTodoStatus", { toDoListId: this.toDoListId, index: this.index });
       const todoList = this.$store.getters.todoLists[this.toDoListId];
-      if (todoList[this.index].checked && this.$store.getters.config.moveCompletedTaskToBottom) {
+      if (taskStatus(todoList[this.index]) === TASK_STATUS.DONE && this.$store.getters.config.moveCompletedTaskToBottom) {
         this.$store.commit("moveTodoToEnd", { toDoListId: this.toDoListId, index: this.index });
       }
       toDoListRepository.update(this.toDoListId, todoList);
@@ -126,6 +128,20 @@ export default {
     },
     notificationIndicator: function () {
       return this.$store.getters.config.notificationIndicator;
+    },
+    status: function () {
+      return taskStatus(this.toDo);
+    },
+    isDone: function () {
+      return this.status === TASK_STATUS.DONE;
+    },
+    isInProgress: function () {
+      return this.status === TASK_STATUS.IN_PROGRESS;
+    },
+    statusLabel: function () {
+      if (this.isDone) return "Mark task to do";
+      if (this.isInProgress) return "Mark task done";
+      return "Mark task in progress";
     }
   }
 };

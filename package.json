@@ -15,7 +15,7 @@
     "serve": "vite",
     "build": "vite build",
     "lint": "eslint --ext .js,.vue src",
-    "test": "echo success"
+    "test": "vitest run"
   },
   "repository": "",
   "dependencies": {
@@ -38,12 +38,13 @@
     "vuex": "^4.0.2"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.0",
     "@vue/compiler-sfc": "^3.2.26",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^7.20.0",
     "sass": "^1.93.2",
     "vite": "^7.1.0",
-    "@vitejs/plugin-vue": "^6.0.0"
+    "vitest": "^3.2.7"
   }
 }

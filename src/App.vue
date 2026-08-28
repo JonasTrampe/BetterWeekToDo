@@ -2,10 +2,10 @@
   <input class="hidden-input-for-focus" type="text" />
   <div v-show="compatible" id="app-container" class="app-container" :class="{ 'dark-theme': darkTheme }">
     <div class="hidden-mobile app-body" :style="{ zoom: `${zoom}%` }">
-      <splash-screen ref="splash"></splash-screen>
       <side-bar @change-date="setSelectedDate" @open-account="showAccountModal"></side-bar>
 
       <div class="h-100 d-flex flex-column">
+        <week-summary v-if="showCalendar" :dates="weekDates"></week-summary>
         <div
           v-show="showCalendar"
           class="todo-lists-container"
@@ -113,7 +113,6 @@
       <about-modal></about-modal>
       <month-overview-modal :selected-date="selected_date" @change-date="setSelectedDate"></month-overview-modal>
       <account-modal ref="accountModal"></account-modal>
-      <welcome-modal></welcome-modal>
       <tips-modal></tips-modal>
       <to-do-modal :selectedTodo="selectedTodo"></to-do-modal>
       <active-to-do :activeTodo="activeTodo"> </active-to-do>
@@ -144,15 +143,13 @@ import sideBar from "./components/layout/sideBar";
 import customToDoListIdsRepository from "./repositories/customToDoListIdsRepository";
 import removeCustomList from "./components/comfirmModals/removeCustomList";
 import configModal from "./views/configModal";
-import splashScreen from "./components/splashScreen";
 import configRepository from "./repositories/configRepository";
 import aboutModal from "./views/aboutModal";
 import accountModal from "./views/accountModal";
 import monthOverviewModal from "./views/monthOverviewModal";
-import welcomeModal from "./views/welcomeModal";
+import weekSummary from "./components/weekSummary";
 import toDoModal from "./views/toDoModal/toDoModal";
 import tipsModal from "./views/tipsModal";
-import { Modal } from "bootstrap";
 import migrations from "./migrations/migrations";
 import version_json from "../public/version.json";
 import notifications from "./helpers/notifications";
@@ -173,11 +170,10 @@ export default {
     toDoList,
     sideBar,
     removeCustomList,
-    splashScreen,
     aboutModal,
     accountModal,
     monthOverviewModal,
-    welcomeModal,
+    weekSummary,
     tipsModal,
     toDoModal,
     clearDataModal,
@@ -227,18 +223,13 @@ export default {
     );
   },
   mounted() {
+    this.checksOnLoadApp();
     this.$refs.weekListContainer.scrollLeft = this.todoListWidth();
     this.calendarHeight = this.$store.getters.config.calendarHeight;
     window.addEventListener("resize", this.weekResetScroll);
     this.systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
     this.systemThemeQuery.addEventListener("change", this.updateSystemTheme);
     this.systemPrefersDark = this.systemThemeQuery.matches;
-    document.onreadystatechange = () => {
-      if (document.readyState == "complete") {
-        setTimeout(this.hideSplash, 4500);
-      }
-    };
-
     if (this.$store.getters.config.importing) {
       this.$store.commit("updateConfig", { val: false, key: "importing" });
       configRepository.update(this.$store.getters.config);
@@ -305,21 +296,6 @@ export default {
           .getElementsByClassName("new-todo-input")[0]
           .focus();
       });
-    },
-    hideSplash: function () {
-      this.$refs.splash.hideSplash();
-      this.checksOnLoadApp();
-      if (this.$store.getters.config.firstTimeOpen) {
-        this.showWelcomeModal();
-      }
-    },
-    showWelcomeModal: function () {
-      let modal = new Modal(document.getElementById("welcomeModal"), {
-        backdrop: "static",
-      });
-      modal.show();
-      this.$store.commit("updateConfig", { val: false, key: "firstTimeOpen" });
-      configRepository.update(this.$store.getters.config);
     },
     showAccountModal: function () {
       this.$refs.accountModal.open();
@@ -469,6 +445,10 @@ export default {
 
       this.$store.commit("updateSelectedDates", dates_array);
       return dates_array;
+    },
+    weekDates: function () {
+      // The outer adjacent days are present solely for the slider animation.
+      return this.dates_array.slice(1, -1);
     },
     showCustomList: function () {
       return this.$store.getters.config.customList;
