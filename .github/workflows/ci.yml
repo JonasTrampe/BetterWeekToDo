@@ -26,6 +26,20 @@ jobs:
   api:
     name: API checks
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: weektodoonline_test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres -d weektodoonline_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     defaults:
       run:
         working-directory: server
@@ -38,6 +52,10 @@ jobs:
           cache-dependency-path: server/package-lock.json
       - run: npm ci
       - run: npm run lint
+      - run: npm run test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/weektodoonline_test
+          PUBLIC_BASE_URL: http://127.0.0.1:31337
 
   containers:
     name: Container builds
