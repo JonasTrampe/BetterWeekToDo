@@ -51,7 +51,7 @@ export default {
       editing: false,
       text: this.toDo.text,
       todoDragHover: false,
-      options: { target: '_blank', defaultProtocol: 'https' }
+      options: { target: '_blank', defaultProtocol: 'https', attributes: { rel: 'noopener noreferrer' } }
     };
   },
   methods: {

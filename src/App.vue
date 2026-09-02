@@ -230,6 +230,11 @@ export default {
     this.systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
     this.systemThemeQuery.addEventListener("change", this.updateSystemTheme);
     this.systemPrefersDark = this.systemThemeQuery.matches;
+    const resetToken = new URLSearchParams(window.location.hash.slice(1)).get("reset-password");
+    if (resetToken) {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+      this.$nextTick(() => this.$refs.accountModal.openPasswordReset(resetToken));
+    }
     if (this.$store.getters.config.importing) {
       this.$store.commit("updateConfig", { val: false, key: "importing" });
       configRepository.update(this.$store.getters.config);

@@ -51,3 +51,5 @@ docker compose exec -T database pg_restore -U weektodoonline -d weektodoonline -
 ```
 
 Keep the dump file and `POSTGRES_PASSWORD` out of source control. WebDAV and S3 are intentionally not enabled yet: adding either requires a separate encrypted credential model and SSRF-safe endpoint policy.
+
+The API purges expired sessions and verification/reset/OIDC state tokens at startup and every six hours. This is best-effort application maintenance; continue using normal PostgreSQL vacuuming, monitoring, and backup procedures.

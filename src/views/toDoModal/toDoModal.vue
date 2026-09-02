@@ -193,7 +193,7 @@ export default {
       editingTitle: false,
       showingCalendar: true,
       loadingView: false,
-      options: { target: '_blank', defaultProtocol: 'https' },
+      options: { target: '_blank', defaultProtocol: 'https', attributes: { rel: 'noopener noreferrer' } },
       clickhandler: new ClickHandler(),
     }
   },
