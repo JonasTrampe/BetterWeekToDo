@@ -1,6 +1,6 @@
 # Security review — WeekToDoOnline
 
-**Updated:** 2026-09-02
+**Updated:** 2026-09-03
 **Scope:** Vue client, local backup/sync paths, Node.js authentication API, PostgreSQL schema, Docker/HAProxy deployment, CI, and dependency trees.
 **Method:** source and configuration review, secret-pattern scan, npm advisory checks, lint/build checks, Compose rendering, and API integration tests against PostgreSQL 17. This is not a penetration test of a deployed instance.
 
@@ -8,7 +8,7 @@
 
 No known critical or high-severity application defect remains from this review. Both production npm dependency trees report zero known vulnerabilities after updates. The test deployment continues to require TLS at HAProxy and normal host/container maintenance.
 
-## Findings resolved in this run
+## Findings resolved in the authentication hardening run
 
 | Severity | Finding | Resolution |
 | --- | --- | --- |
@@ -23,6 +23,21 @@ No known critical or high-severity application defect remains from this review. 
 | Low | Generated links opening new tabs did not consistently set `rel="noopener noreferrer"`. | Added the relationship to Markdown and linkified task output. |
 | Low | The API image used nondeterministic `npm install`, and application containers retained default Linux capabilities. | API builds now use `npm ci`; web/API services drop all capabilities and set `no-new-privileges`. |
 | Informational | Unused Honeybadger and donation/sponsor implementation files remained publicly available or in source. | Removed those files, reducing stale third-party code and dead surface. |
+
+## Findings resolved in the dependency and deprecation follow-up
+
+| Severity | Finding | Resolution |
+| --- | --- | --- |
+| High | A forgotten `deploy`-branch workflow still used Node 16, checkout/setup actions v3, Electron packaging, third-party release code, and a release token. | Removed the obsolete workflow. The project now has only the web/API/container CI path with read-only default permissions. |
+| High | A Google site-verification file from the upstream project would be published by every self-hosted instance and could let the upstream token holder claim a matching Search Console property. | Removed the inherited verification token from public assets. |
+| Medium | The browser bundle retained optional Sentry code and CSP destinations, creating a dormant third-party reporting path in a self-hosted build. | Removed the SDK, setting UI, and both Sentry CSP allowances. The application CSP now permits API connections only to its own origin. |
+| Medium | Runtime/build images and CI used Node 22 after Node 24 became the current LTS line; Docker and GitHub Actions majors were also behind. | Moved build, API, and CI to Node 24; updated checkout, setup-node, Buildx, build-push, and unprivileged nginx versions. PostgreSQL is pinned to the current 17.11 minor without changing database major. |
+| Medium | Electron packaging/tray assets, sponsor translations, and the repository funding configuration contradicted the web-only, sponsor-free fork. | Removed those files/strings and purged persisted Electron, donation, telemetry, and update settings during migration. |
+| Low | Sass `@import` is deprecated and scheduled for removal in Dart Sass 3. | Converted every stylesheet to the module-system `@use` form; builds emit no Sass deprecation warning. |
+| Low | The app requested browser notification permission during initial page load, which modern browsers may reject and which was not tied to user intent. | Permission is requested only when a user enables a timed alarm; notification creation also checks support and granted permission. |
+| Low | Docker used Yarn 1 while CI and development used npm, leaving two lockfiles and different dependency resolution paths. | Standardized development, CI, documentation, and Docker on `npm ci`; removed the Yarn lockfile. |
+| Low | An unregistered service-worker file still referenced removed Webpack bundles and implemented an obsolete cache-first strategy. | Removed the dead worker so it cannot be registered accidentally and serve stale application code. |
+| Informational | A tiny click helper and the only date-picker component were dormant packages last updated in 2022–2023; three other direct dependencies were unused. | Replaced the helper with tested local code, used the browser date input, and removed the dormant/unused packages. Upgraded all remaining compatible frontend and API dependencies. |
 
 ## Previously resolved controls
 
@@ -40,11 +55,12 @@ No known critical or high-severity application defect remains from this review. 
 1. GitHub Actions and container bases use version tags rather than immutable commit/digest pins. Restrict repository administration, review Dependabot changes, and consider SHA/digest pinning for stronger supply-chain assurance.
 2. The CSP still permits inline styles because the current Vue/Bootstrap UI uses style attributes. Scripts remain restricted to same-origin. Removing `style-src 'unsafe-inline'` requires a UI styling refactor.
 3. OIDC discovery, token exchange, and claim behavior must be tested against the actual Authentik tenant before enabling it. Keep OIDC variables unset when unused.
-4. Leave `VITE_SENTRY_DSN` unset for a fully local deployment. If enabled, error reports are user-configurable but become an intentional third-party data flow.
-5. PostgreSQL data and exported browser backups are not application-level encrypted. Use encrypted host storage and encrypted off-host backups, protect SMTP/OIDC/database secrets, and test restoration.
-6. Configure HAProxy to terminate modern TLS, preserve the real client IP from trusted peers only, set request/body/time limits, and route `/api/` and the frontend on the same origin. Do not publish the app, API, or database ports directly.
-7. Expired session and authentication-token rows are rejected but not periodically purged. Add routine database maintenance if the instance has many users or public registration windows.
-8. The optional OIDC path has protocol-level checks but no automated provider simulation. Password auth, sessions, reset, data isolation, and revision conflicts have database-backed coverage.
+4. Moment.js is a legacy project in maintenance mode. It is fully patched at 2.30.1 and no advisory is present, but replacing its 55 date/time call sites is the remaining substantial frontend dependency migration. Treat that as a tested feature refactor, not a blind package swap.
+5. Vite 8 is available, but the current official Vue plugin 6.0.8 declares compatibility only through Vite 7. The project remains on the current Vite 7 release until that peer contract is updated; forcing Vite 8 would leave an unsupported toolchain combination.
+6. PostgreSQL data and exported browser backups are not application-level encrypted. Use encrypted host storage and encrypted off-host backups, protect SMTP/OIDC/database secrets, and test restoration.
+7. Configure HAProxy to terminate modern TLS, preserve the real client IP from trusted peers only, set request/body/time limits, and route `/api/` and the frontend on the same origin. Do not publish the app, API, or database ports directly.
+8. Expired session and authentication-token rows are rejected but not periodically purged. Add routine database maintenance if the instance has many users or public registration windows.
+9. The optional OIDC path has protocol-level checks but no automated provider simulation. Password auth, sessions, reset, data isolation, and revision conflicts have database-backed coverage.
 
 ## Verification performed
 
@@ -52,7 +68,7 @@ No known critical or high-severity application defect remains from this review. 
 - API production dependency audit: zero known vulnerabilities.
 - Secret-pattern scan of tracked files and reachable Git history: no private keys or common provider-token formats found.
 - Frontend unit tests, ESLint 10, Vite production build, API syntax check, and GitHub workflow validation pass.
-- PostgreSQL 17 integration test passes for two registrations, UTF-8 password limits, verified login, unauthenticated rejection, first sync, numeric revision output, stale revision rejection, password reset, and session revocation.
+- PostgreSQL 17 integration test passes after the API upgrades for two registrations, UTF-8 password limits, verified login, unauthenticated rejection, first sync, numeric revision output, stale revision rejection, password reset, and session revocation.
 - Compose configuration renders with required deployment variables supplied.
 
 The temporary PostgreSQL test container used for this review was stopped and automatically removed.
