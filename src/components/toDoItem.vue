@@ -35,7 +35,7 @@
 
 <script>
 import toDoListRepository from "../repositories/toDoListRepository";
-import moment from "moment";
+import dateTime from "../helpers/dateTime";
 import linkifyStr from 'linkify-string';
 import { TASK_STATUS, taskStatus } from "../helpers/taskStatus";
 
@@ -93,7 +93,7 @@ export default {
     },
     timeFormat: function (date) {
       if (date) {
-        return moment(date, "HH:mm").format("hh:mm a");
+        return dateTime(date, "HH:mm").format("hh:mm a");
       }
     },
     showToDoItem: function () {

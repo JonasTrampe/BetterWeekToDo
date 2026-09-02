@@ -1,5 +1,5 @@
 import { rrulestr } from "rrule";
-import moment from "moment";
+import dateTime from "../../helpers/dateTime";
 
 const state = {
   repeatingEventDateCache: {},
@@ -23,10 +23,10 @@ const mutations = {
     for (const [id, re] of Object.entries(repeatingEventList)) {
       const rule = rrulestr(re.repeating_rule);
       rule.between(today, future_date).forEach((date) => {
-        if (state.repeatingEventDateCache[moment.utc(date).format("YYYYMMDD")]) {
-          state.repeatingEventDateCache[moment.utc(date).format("YYYYMMDD")].push(id);
+        if (state.repeatingEventDateCache[dateTime.utc(date).format("YYYYMMDD")]) {
+          state.repeatingEventDateCache[dateTime.utc(date).format("YYYYMMDD")].push(id);
         } else {
-          state.repeatingEventDateCache[moment.utc(date).format("YYYYMMDD")] = [id];
+          state.repeatingEventDateCache[dateTime.utc(date).format("YYYYMMDD")] = [id];
         }
       });
     }
@@ -37,10 +37,10 @@ const mutations = {
     future_date.setFullYear(today.getFullYear() + 10);
     const rule = rrulestr(re.repeating_rule);
     rule.between(today, future_date).forEach((date) => {
-      if (state.repeatingEventDateCache[moment.utc(date).format("YYYYMMDD")]) {
-        state.repeatingEventDateCache[moment.utc(date).format("YYYYMMDD")].push(re.id);
+      if (state.repeatingEventDateCache[dateTime.utc(date).format("YYYYMMDD")]) {
+        state.repeatingEventDateCache[dateTime.utc(date).format("YYYYMMDD")].push(re.id);
       } else {
-        state.repeatingEventDateCache[moment.utc(date).format("YYYYMMDD")] = [re.id];
+        state.repeatingEventDateCache[dateTime.utc(date).format("YYYYMMDD")] = [re.id];
       }
     });
   },

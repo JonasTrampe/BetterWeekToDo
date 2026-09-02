@@ -1,6 +1,6 @@
 import toDoListRepository from "../repositories/toDoListRepository";
 import repeatingEventByDateRepository from "../repositories/repeatingEventByDateRepository";
-import moment from "moment";
+import dateTime from "./dateTime";
 import tasksHelper from "./tasksHelper";
 
 export default {
@@ -28,7 +28,7 @@ export default {
   removeGeneratedRepeatingEvents(listId, vue) {
     vue.$store.getters.todoLists[listId].forEach((todo, index) => {
       if (todo.repeatingEvent && !vue.$store.getters.repeatingEventList[todo.repeatingEvent]) {
-        if (moment(todo.listId).isBefore(Date(), "day")) {
+        if (dateTime(todo.listId).isBefore(Date(), "day")) {
           todo.repeatingEvent = null;
         } else {
           vue.$store.commit("removeTodo", {

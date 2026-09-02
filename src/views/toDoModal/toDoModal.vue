@@ -6,10 +6,9 @@
         <div class="modal-header d-flex">
           <div class="todo-list-selector">
             <div class="d-flex align-items-center">
-              <div v-show="showingCalendar" class="align-items-center date-picker-btn" @click="showCalendar()">
+              <div v-show="showingCalendar" class="align-items-center date-picker-btn">
                 <i class="bi-calendar-event mx-2"></i>
-                <datepicker id="todo-date-picker-input" class="py-2" v-model="pickedDate" :locale="language"
-                  :input-format='"dd/MM/yyyy"' :weekStartsOn="weekStartOnMonday" />
+                <input id="todo-date-picker-input" class="py-2" type="date" v-model="pickedDate" />
               </div>
               <div v-show="!showingCalendar" class="align-items-center date-picker-btn">
                 <div class="align-items-center date-picker-btn py-2" id="customListDropDown" data-bs-toggle="dropdown">
@@ -60,7 +59,7 @@
               <li>
                 <button class="dropdown-item" type="button" @click="copyTodo">
                   <i class="bi-clipboard"></i>
-                  <span>{{ $t("donate.copy") }}</span>
+                  <span>{{ $t("ui.copy") }}</span>
                 </button>
               </li>
               <li>
@@ -151,9 +150,8 @@
 </template>
 
 <script>
-import Datepicker from "vue3-datepicker";
 import toDoListRepository from "../../repositories/toDoListRepository";
-import moment from "moment";
+import dateTime from "../../helpers/dateTime";
 import dbRepository from "../../repositories/dbRepository";
 import { Toast, Modal } from "bootstrap";
 import toastMessage from "../../components/toastMessage";
@@ -162,11 +160,10 @@ import timePicker from "./timePicker";
 import repeatingEvent from "./repeatingEvent";
 import notifications from "../../helpers/notifications";
 import repeatingEventHelper from "../../helpers/repeatingEvents.js";
-import languageHelper from "../../helpers/languageHelper.js"
 import repeatingEventRepository from "../../repositories/repeatingEventRepository";
 import comfirmModal from "../../components/comfirmModal.vue";
 import linkifyStr from 'linkify-string';
-import ClickHandler from "@manuelernestog/click-handler";
+import ClickHandler from "../../helpers/clickHandler";
 import tasksHelper from "../../helpers/tasksHelper";
 import descriptionTextArea from './descriptionTextArea.vue'
 
@@ -174,7 +171,7 @@ export default {
   name: "toDoModal",
   data() {
     return {
-      pickedDate: new Date(),
+      pickedDate: dateTime().format("YYYY-MM-DD"),
       pickedCList: "",
       pickedCListName: "",
       cListOptions: [],
@@ -202,7 +199,6 @@ export default {
   },
   components: {
     colorPicker,
-    Datepicker,
     toastMessage,
     timePicker,
     repeatingEvent,
@@ -278,9 +274,6 @@ export default {
       event.target.parentElement.classList.remove("drag-hover");
       this.updateTodo();
     },
-    showCalendar: function () {
-      document.getElementById("todo-date-picker-input").focus();
-    },
     checkTodoClickhandler: function (resetRepeatinEvent = true) {
       this.clickhandler.handle(function () { this.checkTodo(resetRepeatinEvent) }.bind(this), function () { })
     },
@@ -320,7 +313,7 @@ export default {
     moveToTodoList: function (newListID) {
       if (newListID == "Invalid date" || newListID == "") return;
 
-      if (moment(newListID, "YYYYMMDD", true).isValid()) {
+      if (dateTime(newListID, "YYYYMMDD", true).isValid()) {
         this.pickedCListName = "";
         this.pickedCList = "";
       } else {
@@ -458,9 +451,16 @@ export default {
       }
       this.updateTodoWithReorder();
     },
-    changeAlarm() {
+    async changeAlarm() {
       if (this.todo.time) {
-        this.todo.alarm = this.todo.alarm ? false : true;
+        if (!this.todo.alarm) {
+          if (!("Notification" in window)) return;
+          const permission = Notification.permission === "default"
+            ? await Notification.requestPermission()
+            : Notification.permission;
+          if (permission !== "granted") return;
+        }
+        this.todo.alarm = !this.todo.alarm;
         this.updateTodo();
       }
     },
@@ -508,11 +508,11 @@ export default {
         this.todo["alarm"] = false;
         this.todo["repeatingEvent"] = null;
       }
-      this.showingCalendar = moment(this.todo.listId, "YYYYMMDD", true).isValid();
+      this.showingCalendar = dateTime(this.todo.listId, "YYYYMMDD", true).isValid();
       this.getCListOptions();
       this.loadingView = true;
       if (this.showingCalendar) {
-        this.pickedDate = moment(this.todo.listId).toDate();
+        this.pickedDate = dateTime(this.todo.listId, "YYYYMMDD").format("YYYY-MM-DD");
         this.pickedCList = "";
         this.pickedCListName = "";
       } else {
@@ -531,7 +531,8 @@ export default {
     pickedDate: function (newVal) {
       if (this.loadingView) return;
 
-      var newListId = moment(newVal).format("YYYYMMDD");
+      if (!newVal) return;
+      var newListId = dateTime(newVal, "YYYY-MM-DD", true).format("YYYYMMDD");
       if (newListId != this.todo.listId) {
         this.moveToTodoList(newListId);
       }
@@ -543,10 +544,6 @@ export default {
     }
   },
   computed: {
-    language: function () {
-      let lang = this.$store.getters.config.language;
-      return languageHelper.getLanguagePack(lang);
-    },
     showCL: function () {
       return this.$store.getters.config.customList;
     },
@@ -561,16 +558,13 @@ export default {
     },
     moveSubtaskToBotttom: function () {
       return this.$store.getters.config.moveCompletedSubTaskToBottom;
-    },
-    weekStartOnMonday: function () {
-      return this.$store.getters.config.weekStartOnMonday ? 1 : 0;
     }
   },
 };
 </script>
 
 <style scoped lang="scss">
-@import "/src/assets/style/globalVars.scss";
+@use "/src/assets/style/globalVars.scss" as *;
 
 .modal-dialog {
   max-height: 80%;

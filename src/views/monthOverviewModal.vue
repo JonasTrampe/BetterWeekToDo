@@ -14,7 +14,7 @@
           <div class="month-grid">
             <span v-for="blank in leadingDays" :key="`blank-${blank}`"></span>
             <button v-for="date in days" :key="date" type="button" class="month-day" :class="{ today: isToday(date) }"
-              @click="selectDate(date)">{{ moment(date).date() }}</button>
+              @click="selectDate(date)">{{ dateTime(date).date() }}</button>
           </div>
         </div>
       </div>
@@ -23,16 +23,16 @@
 </template>
 
 <script>
-import moment from "moment";
+import dateTime from "../helpers/dateTime";
 import { Modal } from "bootstrap";
 
 export default {
   name: "monthOverviewModal",
   props: { selectedDate: { required: true, type: String } },
   emits: ["changeDate"],
-  data() { return { month: moment() }; },
+  data() { return { month: dateTime() }; },
   computed: {
-    weekdayNames() { return moment.weekdaysShort(true); },
+    weekdayNames() { return dateTime.weekdaysShort(true); },
     leadingDays() { return (this.month.clone().startOf("month").day() + 6) % 7; },
     days() {
       return Array.from({ length: this.month.daysInMonth() }, (_, index) =>
@@ -41,12 +41,12 @@ export default {
     },
   },
   watch: {
-    selectedDate(value) { if (value) this.month = moment(value, "YYYYMMDD"); },
+    selectedDate(value) { if (value) this.month = dateTime(value, "YYYYMMDD"); },
   },
   methods: {
-    moment,
+    dateTime,
     changeMonth(amount) { this.month = this.month.clone().add(amount, "month"); },
-    isToday(date) { return date === moment().format("YYYYMMDD"); },
+    isToday(date) { return date === dateTime().format("YYYYMMDD"); },
     selectDate(date) {
       this.$emit("changeDate", date);
       Modal.getInstance(document.getElementById("monthOverviewModal")).hide();

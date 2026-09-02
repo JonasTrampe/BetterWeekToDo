@@ -5,8 +5,10 @@ Contributions are welcome. This project is web-only: changes must not reintroduc
 Before opening a pull request, run:
 
 ```sh
-yarn lint
-yarn build
+npm ci
+npm run lint
+npm test
+npm run build
 cd server && npm run lint
 ```
 

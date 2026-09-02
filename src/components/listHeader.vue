@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import moment from "moment";
+import dateTime from "../helpers/dateTime";
 import toDoListRepository from "../repositories/toDoListRepository";
 import customToDoListIdsRepository from "../repositories/customToDoListIdsRepository";
 import notifications from "../helpers/notifications";
@@ -120,7 +120,7 @@ export default {
 
     },
     moments: function (date) {
-      return moment(date);
+      return dateTime(date);
     },
     updateTodoList: function (todoListId, TodoList) {
       notifications.refreshDayNotifications(this, todoListId);
@@ -191,7 +191,7 @@ export default {
   },
   computed: {
     is_today: function () {
-      return moment().format("YYYYMMDD") == this.id;
+      return dateTime().format("YYYYMMDD") == this.id;
     },
     todo_list_name: function () {
       return this.$store.getters.cTodoListIds[this.cTodoListIndex].listName;

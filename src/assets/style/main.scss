@@ -1,4 +1,4 @@
-@import "globalVars";
+@use "globalVars" as *;
 
 body {
   color: $text-color;
@@ -142,26 +142,6 @@ i {
   padding: 0.2rem;
 }
 
-.dark-theme .v3dp__popout {
-  background-color: #21262d !important;
-  border: 1px solid #30363d !important;
-  color: #c9d1d9 !important;
-  box-shadow: none !important;
-}
-
-.dark-theme button.v3dp__heading__center:hover,
-.dark-theme .v3dp__heading__button:not(:disabled):hover {
-  background-color: #2e353d !important;
-}
-
-.v3dp__elements button.selected span {
-  background-color: #3f377e !important;
-}
-
-.v3dp__elements button:not(:disabled):hover span {
-  background-color: #3f377e !important;
-}
-
 .dark-theme .form-switch .form-check-input:not(:checked) {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23c9d1d9'/%3e%3c/svg%3e");
 }
@@ -258,7 +238,7 @@ i {
 }
 
 #todo-date-picker-input {
-  width: 90px;
+  width: 125px;
   border: none;
   background-color: unset;
   color: $btn-color;
@@ -278,15 +258,6 @@ i {
     }
   }
 }
-
-.todo-list-selector .v3dp__popout {
-  margin-top: 10px;
-  margin-left: -30px;
-}
-
-/*#todo-date-picker-input:focus {*/
-/*    outline: unset;*/
-/*}*/
 
 .todo-description p {
   white-space: pre-wrap;

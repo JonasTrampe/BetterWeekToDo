@@ -1,6 +1,6 @@
 import storageRepository from "./storageRepository";
 import version_json from "../../public/version.json";
-import moment from "moment";
+import dateTime from "../helpers/dateTime";
 
 export default {
   load() {
@@ -15,20 +15,13 @@ export default {
         calendar: true,
         language: "en",
         version: version_json.version,
-        checkUpdates: true,
         columns: 5,
         customColumns: 5,
         zoom: 100,
         calendarHeight: "calc(50% - 50px)",
-        notificationOnStartup: true,
         notificationSound: "pop",
-        openOnStartup: true,
-        runInBackground: true,
         moveOldTasks: true,
-        dateToShowInitialDonateModal: moment().add(15, "d").format("YYYY-MM-DD"),
-        InitialDonateModalShown: false,
         mainDividerPosition: 1,
-        darkTrayIcon: false,
         importing: false,
         compactView: true,
         startCalendarYesterday: false,
@@ -39,7 +32,7 @@ export default {
         fullscreenToDoModal: false,
         weekStartOnMonday: true,
         workweekOnly: false,
-        lastDayOpened: moment().format("YYYY-MM-DD")
+        lastDayOpened: dateTime().format("YYYY-MM-DD")
       };
       storageRepository.set("config", default_config);
       return default_config;

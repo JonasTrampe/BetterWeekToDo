@@ -69,7 +69,7 @@ import { Toast, Modal } from "bootstrap";
 import repeatingEventHelper from "../helpers/repeatingEvents.js";
 import repeatingEventRepository from "../repositories/repeatingEventRepository";
 import comfirmModal from "../components/comfirmModal.vue";
-import moment from "moment";
+import dateTime from "../helpers/dateTime";
 
 export default {
   name: "RecurrentEventsModal",
@@ -87,11 +87,11 @@ export default {
     frecuency: function (task) {
       switch (task.type) {
         case "0":
-          return this.$t("todoDetails.yearly") + " / " + moment(task.start_date).locale(this.language).format("MMM Do");
+          return this.$t("todoDetails.yearly") + " / " + dateTime(task.start_date).locale(this.language).format("MMM Do");
         case "1":
-          return this.$t("todoDetails.monthly") + " / " + moment(task.start_date).locale(this.language).format("Do");
+          return this.$t("todoDetails.monthly") + " / " + dateTime(task.start_date).locale(this.language).format("Do");
         case "2":
-          return this.$t("todoDetails.weekly") + " / " + moment(task.start_date).locale(this.language).format("dddd");
+          return this.$t("todoDetails.weekly") + " / " + dateTime(task.start_date).locale(this.language).format("dddd");
         case "3":
           return this.$t("todoDetails.daily");
         case "4":
