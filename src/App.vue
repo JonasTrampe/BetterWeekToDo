@@ -138,7 +138,7 @@
 
 <script>
 import toDoList from "./components/toDoList";
-import moment from "moment";
+import dateTime from "./helpers/dateTime";
 import sideBar from "./components/layout/sideBar";
 import customToDoListIdsRepository from "./repositories/customToDoListIdsRepository";
 import removeCustomList from "./components/comfirmModals/removeCustomList";
@@ -211,7 +211,7 @@ export default {
         let totalCustomListCount = this.$store.getters.cTodoListIds.length;
         this.initialListToLoad = totalDaysCount + totalCustomListCount;
         this.deleteOldRepeatingEvents();
-        this.selected_date = moment().format("YYYYMMDD");
+        this.selected_date = dateTime().format("YYYYMMDD");
         this.$nextTick(() => {
           this.weekResetScroll();
         });
@@ -244,7 +244,7 @@ export default {
       this.systemPrefersDark = event.matches;
     },
     weekMoveLeft: function () {
-      this.selected_date = moment(this.selected_date).subtract(1, "d").format("YYYYMMDD");
+      this.selected_date = dateTime(this.selected_date).subtract(1, "d").format("YYYYMMDD");
       this.$refs.weekListContainer.scrollLeft = this.todoListWidth() * 2;
       this.$refs.weekListContainer.scroll({
         left: this.$refs.weekListContainer.scrollLeft - this.todoListWidth(),
@@ -253,7 +253,7 @@ export default {
       });
     },
     weekMoveRight: function () {
-      this.selected_date = moment(this.selected_date).add(1, "d").format("YYYYMMDD");
+      this.selected_date = dateTime(this.selected_date).add(1, "d").format("YYYYMMDD");
       this.$refs.weekListContainer.scrollLeft = 0;
       this.$refs.weekListContainer.scroll({
         left: this.$refs.weekListContainer.scrollLeft + this.todoListWidth(),
@@ -263,7 +263,7 @@ export default {
     },
     deleteOldRepeatingEvents: function () {
       for (const event of Object.entries(this.$store.getters.repeatingEventList)) {
-        if (moment(event[1].end_date).isBefore(moment())) {
+        if (dateTime(event[1].end_date).isBefore(dateTime())) {
           repeatingEventRepository.remove(event[0]);
           this.$store.commit("removeRepeatingEvent", event[0]);
         }
@@ -335,7 +335,7 @@ export default {
       configRepository.update(this.$store.getters.config);
     },
     refreshTodayNotifications: function () {
-      notifications.refreshDayNotifications(this, moment().format("YYYYMMDD"));
+      notifications.refreshDayNotifications(this, dateTime().format("YYYYMMDD"));
     },
     todoListMounted: function () {
       this.methodsAfterInitialLoad();
@@ -348,21 +348,21 @@ export default {
           if (this.$store.getters.config.moveOldTasks) {
             this.moveOldTasksToToday().then(() => {
               this.refreshTodayNotifications();
-              this.$store.commit("updateConfig", { val: moment().format("YYYYMMDD"), key: "lastDayOpened" });
+              this.$store.commit("updateConfig", { val: dateTime().format("YYYYMMDD"), key: "lastDayOpened" });
               configRepository.update(this.$store.getters.config);
             });
           } else {
             this.refreshTodayNotifications();
-            this.$store.commit("updateConfig", { val: moment().format("YYYYMMDD"), key: "lastDayOpened" });
+            this.$store.commit("updateConfig", { val: dateTime().format("YYYYMMDD"), key: "lastDayOpened" });
             configRepository.update(this.$store.getters.config);
           }
         }
       }
     },
     resetAppOnDayChange: function () {
-      var x = new moment();
-      var y = new moment().add(1, "d").startOf("date");
-      var duration = moment.duration(y.diff(x)).asMilliseconds();
+      var x = new dateTime();
+      var y = new dateTime().add(1, "d").startOf("date");
+      var duration = dateTime.duration(y.diff(x)).asMilliseconds();
 
       setTimeout(
         function () {
@@ -374,11 +374,11 @@ export default {
     },
     moveOldTasksToToday: async function () {
       var promise = new Promise((resolve) => {
-        var todayListId = moment().format("YYYYMMDD");
-        let daysBefore = moment().diff(moment(this.$store.getters.config.lastDayOpened), "days");
+        var todayListId = dateTime().format("YYYYMMDD");
+        let daysBefore = dateTime().diff(dateTime(this.$store.getters.config.lastDayOpened), "days");
         if (daysBefore == 0) daysBefore = 7;
         for (let i = 1; i <= daysBefore; i++) {
-          let listId = moment().subtract(i, "d").format("YYYYMMDD");
+          let listId = dateTime().subtract(i, "d").format("YYYYMMDD");
           this.$store.dispatch("loadTodoLists", listId).then(() => {
             this.$store.commit("moveUndoneItems", { origenId: listId, destinyId: todayListId });
             toDoListRepository.update(listId, this.$store.getters.todoLists[listId]);
@@ -423,8 +423,8 @@ export default {
       if (!this.selected_date) return [];
       if (this.workweekOnly) {
         const dates = [];
-        let date = moment(this.selected_date);
-        while (date.day() === 0 || date.day() === 6) date.add(1, "d");
+        let date = dateTime(this.selected_date);
+        while (date.day() === 0 || date.day() === 6) date = date.add(1, "d");
         dates.push(date.clone().subtract(1, "weekday").format("YYYYMMDD"));
         for (let i = 0; i < this.columns; i++) {
           dates.push(date.clone().add(i, "weekday").format("YYYYMMDD"));
@@ -433,16 +433,16 @@ export default {
         this.$store.commit("updateSelectedDates", dates);
         return dates;
       }
-      var dates_array = [moment(this.selected_date).subtract(1, "d").format("YYYYMMDD"), this.selected_date];
+      var dates_array = [dateTime(this.selected_date).subtract(1, "d").format("YYYYMMDD"), this.selected_date];
 
       for (let i = 1; i < this.columns; i++) {
-        dates_array.push(moment(this.selected_date).add(i, "d").format("YYYYMMDD"));
+        dates_array.push(dateTime(this.selected_date).add(i, "d").format("YYYYMMDD"));
       }
 
       if (this.$store.getters.config.startCalendarYesterday) {
-        dates_array.unshift(moment(this.selected_date).subtract(2, "d").format("YYYYMMDD"));
+        dates_array.unshift(dateTime(this.selected_date).subtract(2, "d").format("YYYYMMDD"));
       } else {
-        dates_array.push(moment(this.selected_date).add(this.columns, "d").format("YYYYMMDD"));
+        dates_array.push(dateTime(this.selected_date).add(this.columns, "d").format("YYYYMMDD"));
       }
 
       this.$store.commit("updateSelectedDates", dates_array);

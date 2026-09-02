@@ -1,6 +1,6 @@
 import storageRepository from "./storageRepository";
 import version_json from "../../public/version.json";
-import moment from "moment";
+import dateTime from "../helpers/dateTime";
 
 export default {
   load() {
@@ -32,7 +32,7 @@ export default {
         fullscreenToDoModal: false,
         weekStartOnMonday: true,
         workweekOnly: false,
-        lastDayOpened: moment().format("YYYY-MM-DD")
+        lastDayOpened: dateTime().format("YYYY-MM-DD")
       };
       storageRepository.set("config", default_config);
       return default_config;

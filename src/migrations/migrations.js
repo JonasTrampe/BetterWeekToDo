@@ -1,5 +1,5 @@
 import configRepository from "../repositories/configRepository";
-import moment from "moment";
+import dateTime from "../helpers/dateTime";
 
 export default {
   migrate() {
@@ -76,7 +76,7 @@ function v2_1_0() {
 function v2_2_0() {
   let config = configRepository.load();
   if (!("lastDayOpened" in config)) {
-    config["lastDayOpened"] = moment().format("YYYY-MM-DD");
+    config["lastDayOpened"] = dateTime().format("YYYY-MM-DD");
     configRepository.update(config);
   }
 }

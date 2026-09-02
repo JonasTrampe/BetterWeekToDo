@@ -38,6 +38,7 @@ No known critical or high-severity application defect remains from this review. 
 | Low | Docker used Yarn 1 while CI and development used npm, leaving two lockfiles and different dependency resolution paths. | Standardized development, CI, documentation, and Docker on `npm ci`; removed the Yarn lockfile. |
 | Low | An unregistered service-worker file still referenced removed Webpack bundles and implemented an obsolete cache-first strategy. | Removed the dead worker so it cannot be registered accidentally and serve stale application code. |
 | Informational | A tiny click helper and the only date-picker component were dormant packages last updated in 2022–2023; three other direct dependencies were unused. | Replaced the helper with tested local code, used the browser date input, and removed the dormant/unused packages. Upgraded all remaining compatible frontend and API dependencies. |
+| Low | Moment.js was a legacy maintenance-mode dependency used throughout date navigation, recurrence, and notifications. | Replaced all direct uses with a tested `date-fns`/`date-fns-tz` adapter. Persisted date IDs and UTC recurrence keys remain format-compatible; Moment is no longer in the dependency tree. |
 
 ## Previously resolved controls
 
@@ -55,19 +56,18 @@ No known critical or high-severity application defect remains from this review. 
 1. GitHub Actions and container bases use version tags rather than immutable commit/digest pins. Restrict repository administration, review Dependabot changes, and consider SHA/digest pinning for stronger supply-chain assurance.
 2. The CSP still permits inline styles because the current Vue/Bootstrap UI uses style attributes. Scripts remain restricted to same-origin. Removing `style-src 'unsafe-inline'` requires a UI styling refactor.
 3. OIDC discovery, token exchange, and claim behavior must be tested against the actual Authentik tenant before enabling it. Keep OIDC variables unset when unused.
-4. Moment.js is a legacy project in maintenance mode. It is fully patched at 2.30.1 and no advisory is present, but replacing its 55 date/time call sites is the remaining substantial frontend dependency migration. Treat that as a tested feature refactor, not a blind package swap.
-5. Vite 8 is available, but the current official Vue plugin 6.0.8 declares compatibility only through Vite 7. The project remains on the current Vite 7 release until that peer contract is updated; forcing Vite 8 would leave an unsupported toolchain combination.
-6. PostgreSQL data and exported browser backups are not application-level encrypted. Use encrypted host storage and encrypted off-host backups, protect SMTP/OIDC/database secrets, and test restoration.
-7. Configure HAProxy to terminate modern TLS, preserve the real client IP from trusted peers only, set request/body/time limits, and route `/api/` and the frontend on the same origin. Do not publish the app, API, or database ports directly.
-8. Expired session and authentication-token rows are rejected but not periodically purged. Add routine database maintenance if the instance has many users or public registration windows.
-9. The optional OIDC path has protocol-level checks but no automated provider simulation. Password auth, sessions, reset, data isolation, and revision conflicts have database-backed coverage.
+4. Vite 8 is available, but the current official Vue plugin 6.0.8 declares compatibility only through Vite 7. The project remains on the current Vite 7 release until that peer contract is updated; forcing Vite 8 would leave an unsupported toolchain combination.
+5. PostgreSQL data and exported browser backups are not application-level encrypted. Use encrypted host storage and encrypted off-host backups, protect SMTP/OIDC/database secrets, and test restoration.
+6. Configure HAProxy to terminate modern TLS, preserve the real client IP from trusted peers only, set request/body/time limits, and route `/api/` and the frontend on the same origin. Do not publish the app, API, or database ports directly.
+7. Expired session and authentication-token rows are rejected but not periodically purged. Add routine database maintenance if the instance has many users or public registration windows.
+8. The optional OIDC path has protocol-level checks but no automated provider simulation. Password auth, sessions, reset, data isolation, and revision conflicts have database-backed coverage.
 
 ## Verification performed
 
 - Frontend production and full dependency audits: zero known vulnerabilities.
 - API production dependency audit: zero known vulnerabilities.
 - Secret-pattern scan of tracked files and reachable Git history: no private keys or common provider-token formats found.
-- Frontend unit tests, ESLint 10, Vite production build, API syntax check, and GitHub workflow validation pass.
+- Frontend unit tests (including date compatibility coverage), ESLint 10, Vite production build, API syntax check, and GitHub workflow validation pass.
 - PostgreSQL 17 integration test passes after the API upgrades for two registrations, UTF-8 password limits, verified login, unauthenticated rejection, first sync, numeric revision output, stale revision rejection, password reset, and session revocation.
 - Compose configuration renders with required deployment variables supplied.
 

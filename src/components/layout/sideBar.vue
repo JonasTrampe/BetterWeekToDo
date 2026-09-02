@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import moment from "moment";
+import dateTime from "../../helpers/dateTime";
 import customToDoListIdsRepository from "../../repositories/customToDoListIdsRepository";
 import toDoListRepository from "../../repositories/toDoListRepository";
 
@@ -96,10 +96,10 @@ export default {
   },
   methods: {
     setTodayDate: function () {
-      this.$emit("changeDate", moment().format("YYYYMMDD"));
+      this.$emit("changeDate", dateTime().format("YYYYMMDD"));
     },
     newCustomTodoList: function () {
-      const customTodoListId = { listId: moment().format("YYYYMMDDTHHmmssS"), listName: "" };
+      const customTodoListId = { listId: dateTime().format("YYYYMMDDTHHmmssS"), listName: "" };
       this.$store.commit("actionsCListCreatedUpdate", true);
       this.$store.commit("newCustomTodoList", customTodoListId);
       customToDoListIdsRepository.update(this.$store.getters.cTodoListIds);

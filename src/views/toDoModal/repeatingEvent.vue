@@ -105,7 +105,7 @@
 <script>
 import { RRule, rrulestr } from "rrule";
 import repeatingEventRepository from "../../repositories/repeatingEventRepository";
-import moment from "moment";
+import dateTime from "../../helpers/dateTime";
 import { Dropdown } from "bootstrap";
 import repeatingEventHelper from "../../helpers/repeatingEvents.js";
 import repeatingEventByDateRepository from "../../repositories/repeatingEventByDateRepository";
@@ -131,7 +131,7 @@ export default {
   methods: {
     done() {
       const rule = this.repeatingEventRule();
-      var repeatingEventId = this.repeatingEvent ? this.repeatingEvent : moment().format("x");
+      var repeatingEventId = this.repeatingEvent ? this.repeatingEvent : dateTime().format("x");
       if (rule) {
         let date = this.todo.listId;
         var re_by_date = this.$store.getters.repeatingEventByDate[date];
@@ -169,7 +169,7 @@ export default {
       var ruleOptions = {
         freq: this.repeatingType,
         interval: this.interval,
-        dtstart: moment.utc(this.todo.listId, "YYYYMMDD").toDate(),
+        dtstart: dateTime.utc(this.todo.listId, "YYYYMMDD").toDate(),
       };
 
       if (this.repeatingType == 4) {
@@ -198,7 +198,7 @@ export default {
       if (this.ocurrencesType == "ocurrences") {
         ruleOptions.count = this.ocurrences;
       } else if (this.ocurrencesType == "untilDate") {
-        ruleOptions.until = moment(this.untilDate);
+        ruleOptions.until = dateTime(this.untilDate).toDate();
       }
       return new RRule(ruleOptions);
     },
@@ -216,9 +216,9 @@ export default {
       };
 
       if (this.ocurrencesType == "ocurrences") {
-        re_event.end_date = moment(rule2.all().slice(-1)[0]);
+        re_event.end_date = dateTime(rule2.all().slice(-1)[0]).toDate();
       } else if (this.ocurrencesType == "untilDate") {
-        re_event.end_date = moment(rule.options.until).toDate();
+        re_event.end_date = dateTime(rule.options.until).toDate();
       } else {
         var date = new Date();
         date.setFullYear(date.getFullYear() + 15);
@@ -228,7 +228,7 @@ export default {
       return re_event;
     },
     moments: function (date) {
-      return moment(date);
+      return dateTime(date);
     },
   },
   watch: {

@@ -40,7 +40,7 @@
 <script>
 import toDoListRepository from "../repositories/toDoListRepository";
 import { Modal, Toast } from "bootstrap";
-import moment from "moment";
+import dateTime from "../helpers/dateTime";
 import notifications from "../helpers/notifications";
 import linkifyStr from 'linkify-string';
 import ClickHandler from "../helpers/clickHandler";
@@ -136,7 +136,7 @@ export default {
     },
     timeFormat: function (date) {
       if (date) {
-        return moment(date, "HH:mm").format("hh:mm a");
+        return dateTime(date, "HH:mm").format("hh:mm a");
       }
     },
     linkifyText: function (text) {

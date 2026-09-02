@@ -151,7 +151,7 @@
 
 <script>
 import toDoListRepository from "../../repositories/toDoListRepository";
-import moment from "moment";
+import dateTime from "../../helpers/dateTime";
 import dbRepository from "../../repositories/dbRepository";
 import { Toast, Modal } from "bootstrap";
 import toastMessage from "../../components/toastMessage";
@@ -171,7 +171,7 @@ export default {
   name: "toDoModal",
   data() {
     return {
-      pickedDate: moment().format("YYYY-MM-DD"),
+      pickedDate: dateTime().format("YYYY-MM-DD"),
       pickedCList: "",
       pickedCListName: "",
       cListOptions: [],
@@ -313,7 +313,7 @@ export default {
     moveToTodoList: function (newListID) {
       if (newListID == "Invalid date" || newListID == "") return;
 
-      if (moment(newListID, "YYYYMMDD", true).isValid()) {
+      if (dateTime(newListID, "YYYYMMDD", true).isValid()) {
         this.pickedCListName = "";
         this.pickedCList = "";
       } else {
@@ -508,11 +508,11 @@ export default {
         this.todo["alarm"] = false;
         this.todo["repeatingEvent"] = null;
       }
-      this.showingCalendar = moment(this.todo.listId, "YYYYMMDD", true).isValid();
+      this.showingCalendar = dateTime(this.todo.listId, "YYYYMMDD", true).isValid();
       this.getCListOptions();
       this.loadingView = true;
       if (this.showingCalendar) {
-        this.pickedDate = moment(this.todo.listId, "YYYYMMDD").format("YYYY-MM-DD");
+        this.pickedDate = dateTime(this.todo.listId, "YYYYMMDD").format("YYYY-MM-DD");
         this.pickedCList = "";
         this.pickedCListName = "";
       } else {
@@ -532,7 +532,7 @@ export default {
       if (this.loadingView) return;
 
       if (!newVal) return;
-      var newListId = moment(newVal, "YYYY-MM-DD", true).format("YYYYMMDD");
+      var newListId = dateTime(newVal, "YYYY-MM-DD", true).format("YYYYMMDD");
       if (newListId != this.todo.listId) {
         this.moveToTodoList(newListId);
       }

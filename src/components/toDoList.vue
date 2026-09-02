@@ -31,7 +31,7 @@
 
 <script>
 import toDoItem from "./toDoItem";
-import moment from "moment";
+import dateTime from "../helpers/dateTime";
 import toDoListRepository from "../repositories/toDoListRepository";
 import listHeader from "./listHeader";
 import notifications from "../helpers/notifications";
@@ -104,7 +104,7 @@ export default {
       this.newToDo.text = "";
     },
     moments: function (date) {
-      return moment(date);
+      return dateTime(date);
     },
     onDrop: function (event, list, new_index) {
       let toDo = JSON.parse(event.dataTransfer.getData("item"));
