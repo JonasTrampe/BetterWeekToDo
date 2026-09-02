@@ -59,7 +59,7 @@ No known critical or high-severity application defect remains from this review. 
 4. Vite 8 is available, but the current official Vue plugin 6.0.8 declares compatibility only through Vite 7. The project remains on the current Vite 7 release until that peer contract is updated; forcing Vite 8 would leave an unsupported toolchain combination.
 5. PostgreSQL data and exported browser backups are not application-level encrypted. Use encrypted host storage and encrypted off-host backups, protect SMTP/OIDC/database secrets, and test restoration.
 6. Configure HAProxy to terminate modern TLS, preserve the real client IP from trusted peers only, set request/body/time limits, and route `/api/` and the frontend on the same origin. Do not publish the app, API, or database ports directly.
-7. Expired session and authentication-token rows are rejected but not periodically purged. Add routine database maintenance if the instance has many users or public registration windows.
+7. Expired session and authentication-token rows are now purged at API startup and every six hours. Larger installations should still monitor table growth and retain normal PostgreSQL maintenance.
 8. The optional OIDC path has protocol-level checks but no automated provider simulation. Password auth, sessions, reset, data isolation, and revision conflicts have database-backed coverage.
 
 ## Verification performed

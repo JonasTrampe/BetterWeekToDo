@@ -130,7 +130,10 @@ async function requireUser(request, response, next) {
     "SELECT users.id, users.email, users.email_verified_at FROM sessions JOIN users ON users.id = sessions.user_id WHERE sessions.token_hash = $1 AND sessions.expires_at > now()",
     [sha256(token)]
   );
-  if (!result.rows[0]) return response.status(401).json({ error: "Authentication required" });
+  if (!result.rows[0]) {
+    clearSessionCookie(response);
+    return response.status(401).json({ error: "Authentication required" });
+  }
   request.user = result.rows[0];
   next();
 }
@@ -347,6 +350,17 @@ async function getOidcMetadata() {
   return oidcMetadata;
 }
 
+// Keep short-lived authentication material from accumulating indefinitely.
+// This runs in-process so it works for a single-container deployment; each
+// replica may run it safely because the DELETE is idempotent.
+async function cleanupExpiredAuthRecords() {
+  await pool.query("DELETE FROM auth_tokens WHERE expires_at <= now()");
+  await pool.query("DELETE FROM sessions WHERE expires_at <= now()");
+}
+
 const schemaPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "schema.sql");
 await pool.query(await fs.readFile(schemaPath, "utf8"));
+await cleanupExpiredAuthRecords();
+const cleanupTimer = setInterval(() => cleanupExpiredAuthRecords().catch((error) => console.error("Authentication cleanup failed", error)), 6 * 60 * 60 * 1000);
+cleanupTimer.unref();
 app.listen(process.env.PORT || 3000, "0.0.0.0", () => console.log("WeekToDoOnline API listening"));
