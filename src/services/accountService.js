@@ -11,6 +11,8 @@ const request = (path, options = {}) => fetch(`/api${path}`, {
 export default {
   register: (email, password) => request("/auth/register", { method: "POST", body: JSON.stringify({ email, password }) }),
   login: (email, password) => request("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+  forgotPassword: (email) => request("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) }),
+  resetPassword: (token, password) => request("/auth/reset-password", { method: "POST", body: JSON.stringify({ token, password }) }),
   logout: () => request("/auth/logout", { method: "POST" }),
   me: () => request("/auth/me"),
   config: () => request("/auth/config"),

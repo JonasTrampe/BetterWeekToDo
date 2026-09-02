@@ -30,6 +30,13 @@ const config = {
   allowRegistration: process.env.ALLOW_REGISTRATION === "true",
 };
 
+for (const [name, value] of [["PUBLIC_BASE_URL", config.publicBaseUrl], ["OIDC_ISSUER_URL", config.oidcIssuer]]) {
+  if (!value) continue;
+  const url = new URL(value);
+  if (config.nodeEnv === "production" && url.protocol !== "https:") throw new Error(`${name} must use HTTPS in production`);
+  if (url.username || url.password || url.search || url.hash || url.pathname !== "/") throw new Error(`${name} must be a plain origin URL`);
+}
+
 if (config.oidcIssuer && (!config.oidcClientId || !config.oidcClientSecret)) {
   throw new Error("OIDC_CLIENT_ID and OIDC_CLIENT_SECRET are required with OIDC_ISSUER_URL");
 }
@@ -52,7 +59,7 @@ const authLimiter = rateLimit({
 
 const credentialsSchema = z.object({
   email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
-  password: z.string().min(12).max(72),
+  password: z.string().min(12).max(72).refine((value) => Buffer.byteLength(value, "utf8") <= 72, "Password must not exceed 72 UTF-8 bytes"),
 });
 const emailSchema = z.object({ email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()) });
 const dataSchema = z.object({ data: z.record(z.string(), z.unknown()), revision: z.number().int().nonnegative().optional() });
@@ -89,6 +96,7 @@ function clearSessionCookie(response) {
 async function sendMail({ to, subject, text }) {
   if (!config.smtpUrl || !config.mailFrom) {
     if (config.nodeEnv === "production") throw new Error("Email delivery is not configured");
+    if (config.nodeEnv === "test") return;
     console.info(`Development email to ${to}: ${subject}\n${text}`);
     return;
   }
@@ -103,10 +111,10 @@ async function issueToken(userId, purpose, hours) {
 
 async function consumeToken(token, purpose) {
   const result = await pool.query(
-    "DELETE FROM auth_tokens WHERE token_hash = $1 AND purpose = $2 AND expires_at > now() RETURNING user_id",
+    "DELETE FROM auth_tokens WHERE token_hash = $1 AND purpose = $2 AND expires_at > now() RETURNING user_id, context",
     [sha256(token), purpose]
   );
-  return result.rows[0]?.user_id;
+  return result.rows[0] || null;
 }
 
 async function createSession(userId, response) {
@@ -163,9 +171,9 @@ app.post("/api/auth/register", authLimiter, async (request, response, next) => {
 
 app.get("/api/auth/verify-email", async (request, response, next) => {
   try {
-    const userId = await consumeToken(String(request.query.token || ""), "verify_email");
-    if (!userId) return response.status(400).send("This verification link is invalid or expired.");
-    await pool.query("UPDATE users SET email_verified_at = now() WHERE id = $1", [userId]);
+    const token = await consumeToken(String(request.query.token || ""), "verify_email");
+    if (!token?.user_id) return response.status(400).send("This verification link is invalid or expired.");
+    await pool.query("UPDATE users SET email_verified_at = now() WHERE id = $1", [token.user_id]);
     response.redirect(303, `${config.publicBaseUrl}/?verified=1`);
   } catch (error) {
     next(error);
@@ -200,7 +208,7 @@ app.post("/api/auth/forgot-password", authLimiter, async (request, response, nex
       await sendMail({
         to: result.rows[0].email,
         subject: "Reset your WeekToDoOnline password",
-        text: `Open ${config.publicBaseUrl}/reset-password?token=${encodeURIComponent(token)} to reset your password. This link expires in one hour.`,
+        text: `Open ${config.publicBaseUrl}/#reset-password=${encodeURIComponent(token)} to reset your password. This link expires in one hour.`,
       });
     }
     response.status(202).json({ message: "If the account exists, a reset link has been sent." });
@@ -213,10 +221,10 @@ app.post("/api/auth/reset-password", authLimiter, async (request, response, next
   const parsed = credentialsSchema.pick({ password: true }).extend({ token: z.string().min(32) }).safeParse(request.body);
   if (!parsed.success) return validationError(response, parsed.error);
   try {
-    const userId = await consumeToken(parsed.data.token, "password_reset");
-    if (!userId) return response.status(400).json({ error: "This reset link is invalid or expired" });
-    await pool.query("UPDATE users SET password_hash = $1 WHERE id = $2", [await bcrypt.hash(parsed.data.password, 12), userId]);
-    await pool.query("DELETE FROM sessions WHERE user_id = $1", [userId]);
+    const token = await consumeToken(parsed.data.token, "password_reset");
+    if (!token?.user_id) return response.status(400).json({ error: "This reset link is invalid or expired" });
+    await pool.query("UPDATE users SET password_hash = $1 WHERE id = $2", [await bcrypt.hash(parsed.data.password, 12), token.user_id]);
+    await pool.query("DELETE FROM sessions WHERE user_id = $1", [token.user_id]);
     response.json({ message: "Password updated. Sign in with your new password." });
   } catch (error) {
     next(error);
@@ -238,7 +246,7 @@ app.get("/api/auth/me", requireUser, (request, response) => response.json({ id: 
 
 app.get("/api/data", requireUser, async (request, response, next) => {
   try {
-    const result = await pool.query("SELECT data, revision, updated_at FROM user_data WHERE user_id = $1", [request.user.id]);
+    const result = await pool.query("SELECT data, revision::int AS revision, updated_at FROM user_data WHERE user_id = $1", [request.user.id]);
     response.json(result.rows[0] || { data: null, revision: 0, updated_at: null });
   } catch (error) {
     next(error);
@@ -253,7 +261,7 @@ app.put("/api/data", requireUser, async (request, response, next) => {
       `INSERT INTO user_data (user_id, data, revision) VALUES ($1, $2, 1)
        ON CONFLICT (user_id) DO UPDATE SET data = EXCLUDED.data, revision = user_data.revision + 1, updated_at = now()
        WHERE user_data.revision = COALESCE($3, user_data.revision)
-       RETURNING revision, updated_at`,
+       RETURNING revision::int AS revision, updated_at`,
       [request.user.id, parsed.data.data, parsed.data.revision]
     );
     if (!result.rows[0]) return response.status(409).json({ error: "Data has changed on another device" });
@@ -268,13 +276,19 @@ app.get("/api/auth/oidc/login", async (_request, response, next) => {
   try {
     const metadata = await getOidcMetadata();
     const state = newToken();
-    await pool.query("INSERT INTO auth_tokens (token_hash, purpose, expires_at) VALUES ($1, 'oidc_state', $2)", [sha256(state), expiresAt(1 / 12)]);
+    const nonce = newToken();
+    const codeVerifier = newToken();
+    const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("base64url");
+    await pool.query("INSERT INTO auth_tokens (token_hash, purpose, context, expires_at) VALUES ($1, 'oidc_state', $2, $3)", [sha256(state), { nonce, codeVerifier }, expiresAt(1 / 12)]);
     const url = new URL(metadata.authorization_endpoint);
     url.searchParams.set("client_id", config.oidcClientId);
     url.searchParams.set("redirect_uri", `${config.publicBaseUrl}/api/auth/oidc/callback`);
     url.searchParams.set("response_type", "code");
     url.searchParams.set("scope", "openid email profile");
     url.searchParams.set("state", state);
+    url.searchParams.set("nonce", nonce);
+    url.searchParams.set("code_challenge", codeChallenge);
+    url.searchParams.set("code_challenge_method", "S256");
     response.redirect(303, url);
   } catch (error) {
     next(error);
@@ -284,8 +298,8 @@ app.get("/api/auth/oidc/login", async (_request, response, next) => {
 app.get("/api/auth/oidc/callback", async (request, response, next) => {
   if (!config.oidcIssuer) return response.status(404).end();
   try {
-    const stateAccepted = await consumeToken(String(request.query.state || ""), "oidc_state");
-    if (!stateAccepted) throw new Error("Invalid OIDC state");
+    const stateRecord = await consumeToken(String(request.query.state || ""), "oidc_state");
+    if (!stateRecord?.context?.nonce || !stateRecord.context.codeVerifier) throw new Error("Invalid OIDC state");
     const metadata = await getOidcMetadata();
     const tokenResponse = await fetch(metadata.token_endpoint, {
       method: "POST",
@@ -296,11 +310,14 @@ app.get("/api/auth/oidc/callback", async (request, response, next) => {
         redirect_uri: `${config.publicBaseUrl}/api/auth/oidc/callback`,
         client_id: config.oidcClientId,
         client_secret: config.oidcClientSecret,
+        code_verifier: stateRecord.context.codeVerifier,
       }),
     });
     if (!tokenResponse.ok) throw new Error("OIDC token exchange failed");
     const tokens = await tokenResponse.json();
-    const claims = (await jwtVerify(tokens.id_token, createRemoteJWKSet(new URL(metadata.jwks_uri)), { issuer: config.oidcIssuer, audience: config.oidcClientId })).payload;
+    if (typeof tokens.id_token !== "string") throw new Error("OIDC provider did not return an ID token");
+    const claims = (await jwtVerify(tokens.id_token, createRemoteJWKSet(new URL(metadata.jwks_uri)), { issuer: config.oidcIssuer, audience: config.oidcClientId, maxTokenAge: "5 minutes" })).payload;
+    if (claims.nonce !== stateRecord.context.nonce) throw new Error("OIDC nonce mismatch");
     if (!claims.email || claims.email_verified !== true || !claims.sub) throw new Error("OIDC provider did not return a verified email identity");
     const user = await pool.query(
       `INSERT INTO users (email, email_verified_at, oidc_issuer, oidc_subject)

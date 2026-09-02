@@ -4,14 +4,21 @@
       <div class="modal-header"><h5 class="modal-title">Account</h5><i class="bi-x close-modal" data-bs-dismiss="modal"></i></div>
       <form class="modal-body" @submit.prevent="submit">
         <template v-if="user"><p>Signed in as <strong>{{ user.email }}</strong>.</p><p class="small text-muted">Sync is manual. Upload replaces your account backup; download replaces this browser's local data.</p><button class="btn btn-outline-primary w-100 mb-2" type="button" :disabled="submitting" @click="upload">Upload local data</button><button class="btn btn-outline-secondary w-100 mb-2" type="button" :disabled="submitting" @click="download">Download account data</button><p v-if="message" class="small" :class="error ? 'text-danger' : 'text-success'">{{ message }}</p><button class="btn btn-outline-danger w-100" type="button" @click="signOut">Sign out</button></template>
-        <template v-else>
-          <p class="small text-muted">{{ registerMode ? "Create an account and verify your email." : "Sign in to your self-hosted account." }}</p>
-          <input v-model.trim="email" class="form-control mb-3" type="email" autocomplete="email" placeholder="Email" required>
-          <input v-model="password" class="form-control mb-3" type="password" :autocomplete="registerMode ? 'new-password' : 'current-password'" placeholder="Password (12+ characters)" minlength="12" maxlength="72" required>
+        <template v-else-if="resetToken">
+          <p class="small text-muted">Choose a new password for your account.</p>
+          <input v-model="password" class="form-control mb-3" type="password" autocomplete="new-password" placeholder="Password (12+ characters)" minlength="12" maxlength="72" required>
           <p v-if="message" class="small" :class="error ? 'text-danger' : 'text-success'">{{ message }}</p>
-          <button class="btn btn-primary w-100" :disabled="submitting">{{ registerMode ? "Create account" : "Sign in" }}</button>
-          <button v-if="registrationEnabled" class="btn btn-link w-100 mt-2" type="button" @click="toggleMode">{{ registerMode ? "Already have an account? Sign in" : "Create an account" }}</button>
-          <a v-if="oidcEnabled" class="btn btn-outline-secondary w-100 mt-2" href="/api/auth/oidc/login">Use another provider</a>
+          <button class="btn btn-primary w-100" :disabled="submitting" @click.prevent="resetPassword">Reset password</button>
+        </template>
+        <template v-else>
+          <p class="small text-muted">{{ forgotMode ? "Request a password reset link." : registerMode ? "Create an account and verify your email." : "Sign in to your self-hosted account." }}</p>
+          <input v-model.trim="email" class="form-control mb-3" type="email" autocomplete="email" placeholder="Email" required>
+          <input v-if="!forgotMode" v-model="password" class="form-control mb-3" type="password" :autocomplete="registerMode ? 'new-password' : 'current-password'" placeholder="Password (12+ characters)" minlength="12" maxlength="72" required>
+          <p v-if="message" class="small" :class="error ? 'text-danger' : 'text-success'">{{ message }}</p>
+          <button class="btn btn-primary w-100" :disabled="submitting">{{ forgotMode ? "Send reset link" : registerMode ? "Create account" : "Sign in" }}</button>
+          <button v-if="!forgotMode && registrationEnabled" class="btn btn-link w-100 mt-2" type="button" @click="toggleMode">{{ registerMode ? "Already have an account? Sign in" : "Create an account" }}</button>
+          <button v-if="!registerMode" class="btn btn-link w-100" type="button" @click="toggleForgot">{{ forgotMode ? "Back to sign in" : "Forgot password?" }}</button>
+          <a v-if="!forgotMode && oidcEnabled" class="btn btn-outline-secondary w-100 mt-2" href="/api/auth/oidc/login">Use another provider</a>
         </template>
       </form>
     </div></div>
@@ -21,12 +28,15 @@
 import { Modal } from "bootstrap";
 import accountService from "../services/accountService";
 import { createBackupData, restoreBackupData, validateBackup } from "../helpers/exportTool";
-export default { name: "accountModal", data() { return { user: null, email: "", password: "", registerMode: false, registrationEnabled: false, oidcEnabled: false, submitting: false, message: "", error: false, revision: 0 }; }, methods: {
+export default { name: "accountModal", data() { return { user: null, email: "", password: "", registerMode: false, forgotMode: false, resetToken: "", registrationEnabled: false, oidcEnabled: false, submitting: false, message: "", error: false, revision: 0 }; }, methods: {
   async open() { this.message = ""; try { [this.user, { registrationEnabled: this.registrationEnabled, oidcEnabled: this.oidcEnabled }] = await Promise.all([accountService.me(), accountService.config()]); this.revision = (await accountService.getData()).revision; } catch (_error) { this.user = null; const authConfig = await accountService.config(); this.registrationEnabled = authConfig.registrationEnabled; this.oidcEnabled = authConfig.oidcEnabled; } new Modal(document.getElementById("accountModal")).show(); },
-  async submit() { this.submitting = true; this.message = ""; this.error = false; try { if (this.registerMode) { this.message = (await accountService.register(this.email, this.password)).message; } else { this.user = await accountService.login(this.email, this.password); this.password = ""; const remote = await accountService.getData(); this.revision = remote.revision; } } catch (error) { this.error = true; this.message = error.message; } finally { this.submitting = false; } },
+  async submit() { this.submitting = true; this.message = ""; this.error = false; try { if (this.forgotMode) { this.message = (await accountService.forgotPassword(this.email)).message; } else if (this.registerMode) { this.message = (await accountService.register(this.email, this.password)).message; } else { this.user = await accountService.login(this.email, this.password); this.password = ""; const remote = await accountService.getData(); this.revision = remote.revision; } } catch (error) { this.error = true; this.message = error.message; } finally { this.submitting = false; } },
+  openPasswordReset(token) { this.resetToken = token; this.message = ""; this.error = false; new Modal(document.getElementById("accountModal")).show(); },
+  async resetPassword() { this.submitting = true; this.message = ""; this.error = false; try { this.message = (await accountService.resetPassword(this.resetToken, this.password)).message; this.resetToken = ""; this.password = ""; } catch (error) { this.error = true; this.message = error.message; } finally { this.submitting = false; } },
   async upload() { this.submitting = true; this.message = ""; this.error = false; try { const result = await accountService.putData(await createBackupData(), this.revision); this.revision = result.revision; this.message = "Local data uploaded securely."; } catch (error) { this.error = true; this.message = error.message === "Data has changed on another device" ? "Account data changed elsewhere. Download it before uploading again." : error.message; } finally { this.submitting = false; } },
   async download() { this.submitting = true; this.message = ""; this.error = false; try { const remote = await accountService.getData(); if (!remote.data) { this.message = "No account backup exists yet."; return; } if (!window.confirm("Replace this browser's local data with the account backup?")) return; await restoreBackupData(validateBackup(remote.data)); this.revision = remote.revision; this.message = "Account data downloaded. Reloading…"; window.setTimeout(() => window.location.reload(), 500); } catch (error) { this.error = true; this.message = error.message; } finally { this.submitting = false; } },
   async signOut() { await accountService.logout(); this.user = null; },
   toggleMode() { this.registerMode = !this.registerMode && this.registrationEnabled; this.message = ""; this.error = false; },
+  toggleForgot() { this.forgotMode = !this.forgotMode; this.message = ""; this.error = false; },
 } };
 </script>
