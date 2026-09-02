@@ -56,7 +56,7 @@ export default {
       editing: false,
       todoDragHover: false,
       todoDragging: false,
-      options: { target: '_blank', defaultProtocol: 'https' },
+      options: { target: '_blank', defaultProtocol: 'https', attributes: { rel: 'noopener noreferrer' } },
       clickhandler: new ClickHandler(),
       scrollingTimeOut: null
     };

@@ -3,6 +3,10 @@ services:
     build: .
     container_name: weektodoonline
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     expose:
       - "8080"
     healthcheck:
@@ -16,6 +20,10 @@ services:
     build: ./server
     container_name: weektodoonline-api
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     environment:
       DATABASE_URL: postgresql://weektodoonline:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@database:5432/weektodoonline
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?Set PUBLIC_BASE_URL in .env}

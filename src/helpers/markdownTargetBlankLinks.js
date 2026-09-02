@@ -13,6 +13,7 @@ export default {
       } else {
         tokens[idx].attrs[aIndex][1] = "_blank";
       }
+      tokens[idx].attrSet("rel", "noopener noreferrer");
       return defaultRender(tokens, idx, options, env, self);
     };
   },
