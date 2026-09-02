@@ -78,12 +78,6 @@
                 </div>
 
 
-                <div class="form-check form-switch d-flex px-1 mb-3 justify-content-between">
-                  <label class="form-check-label flex-fill" for="reportErrors">{{ $t("settings.reportErrors")
-                  }}</label>
-                  <input class="form-check-input" type="checkbox" id="reportErrors" v-model="configData.reportErrors"
-                    @change="setSendErrors()" />
-                </div>
               </div>
             </div>
             <div class="tab-pane fade" id="config-behavior">
@@ -354,9 +348,6 @@ export default {
     setLanguage: function () {
       this.changeConfig('language', this.configData.language);
     },
-    setSendErrors: function () {
-      this.changeConfig('reportErrors', this.configData.reportErrors);
-    },
     playSound: function () {
       notifications.playNotificationSound(
         this.$store.getters.config.notificationSound
@@ -377,7 +368,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../assets/style/globalVars";
+@use "../assets/style/globalVars" as *;
 
 .form-check-input {
   width: 2.8em !important;

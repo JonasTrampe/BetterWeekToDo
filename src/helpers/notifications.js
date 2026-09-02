@@ -35,6 +35,7 @@ export default {
     return alertTimeOut;
   },
   createNotification(header, body, notificationSound) {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
     new Notification(header, {
       body: body,
       icon: "/favicon.ico",

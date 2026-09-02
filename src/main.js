@@ -1,7 +1,6 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 import { store } from "./store/store";
-import * as Sentry from "@sentry/vue";
 
 import { createI18n } from "vue-i18n";
 import { languages } from "./assets/languages/languages.js";
@@ -20,16 +19,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "./assets/style/globalVars.scss";
 import "./assets/style/main.scss";
 import "./assets/style/uiComponents.scss";
-
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
-  tracesSampleRate: 0,
-  replaysSessionSampleRate: 0,
-  replaysOnErrorSampleRate: 0,
-  beforeSend(event) {
-    return store.getters.config.reportErrors ? event : null;
-  },
-});
 
 const app = createApp(App);
 

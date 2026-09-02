@@ -3,27 +3,17 @@ import moment from "moment";
 
 export default {
   migrate() {
-    configCheckUpdate();
     configCalendarZoomColumnsCalendarHeight();
     configNotifications();
-    runInBackground();
+    configMoveOldTasks();
     mainDividerPosition();
-    trayIcon();
-    telemetric();
+    configTaskBehavior();
     v2_1_0();
     v2_2_0();
     webOnlySettings();
-    removeOnboarding();
+    removeLegacySettings();
   },
 };
-
-function configCheckUpdate() {
-  let config = configRepository.load();
-  if (!("checkUpdates" in config)) {
-    config["checkUpdates"] = true;
-    configRepository.update(config);
-  }
-}
 
 function configCalendarZoomColumnsCalendarHeight() {
   let config = configRepository.load();
@@ -38,21 +28,16 @@ function configCalendarZoomColumnsCalendarHeight() {
 
 function configNotifications() {
   let config = configRepository.load();
-  if (!("startupNotification" in config)) {
-    config["notificationOnStartup"] = true;
+  if (!("notificationSound" in config)) {
     config["notificationSound"] = "pop";
-    config["openOnStartup"] = true;
     configRepository.update(config);
   }
 }
 
-function runInBackground() {
+function configMoveOldTasks() {
   let config = configRepository.load();
-  if (!("runInBackground" in config)) {
-    config["runInBackground"] = true;
+  if (!("moveOldTasks" in config)) {
     config["moveOldTasks"] = true;
-    config["dateToShowInitialDonateModal"] = moment().add(15, "d").format("YYYY-MM-DD");
-    config["InitialDonateModalShown"] = false;
     configRepository.update(config);
   }
 }
@@ -65,19 +50,9 @@ function mainDividerPosition() {
   }
 }
 
-function trayIcon() {
+function configTaskBehavior() {
   let config = configRepository.load();
-  if (!("darkTrayIcon" in config)) {
-    config["darkTrayIcon"] = false;
-    config["importing"] = false;
-    configRepository.update(config);
-  }
-}
-
-function telemetric() {
-  let config = configRepository.load();
-  if (!("reportErrors" in config)) {
-    config["reportErrors"] = false;
+  if (!("compactView" in config)) {
     config["customColumns"] = config["columns"];
     config["compactView"] = true;
     config["startCalendarYesterday"] = true;
@@ -113,10 +88,27 @@ function webOnlySettings() {
   configRepository.update(config);
 }
 
-function removeOnboarding() {
+function removeLegacySettings() {
   const config = configRepository.load();
-  if ("firstTimeOpen" in config) {
-    delete config.firstTimeOpen;
+  const legacyKeys = [
+    "checkUpdates",
+    "darkTrayIcon",
+    "dateToShowInitialDonateModal",
+    "firstTimeOpen",
+    "InitialDonateModalShown",
+    "notificationOnStartup",
+    "openOnStartup",
+    "reportErrors",
+    "runInBackground",
+  ];
+  let changed = false;
+  for (const key of legacyKeys) {
+    if (key in config) {
+      delete config[key];
+      changed = true;
+    }
+  }
+  if (changed) {
     configRepository.update(config);
   }
 }

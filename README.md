@@ -11,8 +11,8 @@ The supported deployment is Docker Compose with HAProxy terminating TLS and prox
 ## Development
 
 ```sh
-yarn install --frozen-lockfile
-yarn serve
+npm ci
+npm run serve
 ```
 
 Run the API separately with `cd server && npm ci && npm start`, after setting `DATABASE_URL` and `PUBLIC_BASE_URL`.

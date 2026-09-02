@@ -43,7 +43,7 @@ import { Modal, Toast } from "bootstrap";
 import moment from "moment";
 import notifications from "../helpers/notifications";
 import linkifyStr from 'linkify-string';
-import ClickHandler from "@manuelernestog/click-handler";
+import ClickHandler from "../helpers/clickHandler";
 import tasksHelper from "../helpers/tasksHelper";
 
 export default {

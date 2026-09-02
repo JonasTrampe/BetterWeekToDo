@@ -201,9 +201,6 @@ export default {
       migrations.migrate();
     }
 
-    if (Notification.permission !== "denied") {
-      Notification.requestPermission();
-    }
     this.$store.commit("loadCustomTodoListsIds", customToDoListIdsRepository.load());
     this.$store.commit("loadConfig", configRepository.load());
     this.$i18n.locale = this.$store.getters.config.language;
@@ -521,7 +518,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import "/src/assets/style/globalVars.scss";
+@use "/src/assets/style/globalVars.scss" as *;
 
 body {
   line-height: unset !important;
