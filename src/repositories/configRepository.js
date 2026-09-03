@@ -10,7 +10,7 @@ export default {
     } else {
       let default_config = {
         darkTheme: false,
-        themeMode: "system",
+        themeMode: "light",
         customList: true,
         calendar: true,
         language: "en",
