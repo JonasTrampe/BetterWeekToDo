@@ -57,10 +57,19 @@ export default {
 
 <style scoped>
 .modal-dialog { max-width: 360px; }
-.month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
-.month-weekdays { font-size: .75rem; opacity: .7; margin-bottom: 8px; }
-.month-day { border: 0; border-radius: 50%; background: transparent; aspect-ratio: 1; }
+.modal-content { padding: 24px 26px 20px; }
+.modal-header { padding: 0 0 14px; margin-bottom: 14px; border-bottom: 1px solid rgba(101, 116, 102, 0.22); }
+.modal-title { font-family: "Garden Serif", "Noto Serif Display", serif; font-weight: 500; font-size: 1.1rem; color: #263a2d; }
+.month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+.month-weekdays { font-size: .75rem; margin-bottom: 10px; }
+.month-weekdays span { font-size: 0.68rem; font-weight: 400; letter-spacing: 0.07em; text-transform: uppercase; color: #657466; }
+.month-day { border: 0; border-radius: 50%; background: transparent; aspect-ratio: 1; color: #263a2d; font-size: 0.85rem; }
 .month-day:hover { background: #eaecef; }
-.month-day.today { background: #6f42c1; color: white; }
-.dark-theme .month-day:hover { background: #30363d; }
+.month-day.today { background: #c86d3e; color: #fff; }
+.dark-theme .modal-header { border-bottom-color: rgba(159, 176, 157, 0.22); }
+.dark-theme .modal-title { color: #e3ebe0; }
+.dark-theme .month-weekdays span { color: #9fb09d; }
+.dark-theme .month-day { color: #e3ebe0; }
+.dark-theme .month-day:hover { background: #2b3d2e; }
+.dark-theme .month-day.today { color: #fff; }
 </style>

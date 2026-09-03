@@ -23,18 +23,18 @@
   .dark-theme & {
     background-color: $black-bg-color !important;
     border: $black-border-color;
-    color: #c9d1d9 !important;
+    color: $dt-text-color !important;
     box-shadow: none !important;
 
     .dropdown-item {
-      color: #c9d1d9 !important;
+      color: $dt-text-color !important;
 
       &:hover {
-        background-color: #2e353d !important;
+        background-color: $dt-btn-hover-bg-color !important;
       }
 
       &:active {
-        background-color: #363f48 !important;
+        background-color: $dt-btn-active-bg-color !important;
       }
     }
   }

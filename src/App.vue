@@ -4,103 +4,24 @@
     <div class="hidden-mobile app-body" :style="{ zoom: `${zoom}%` }">
       <side-bar @change-date="setSelectedDate" @open-account="showAccountModal"></side-bar>
 
-      <div class="h-100 d-flex flex-column">
-        <week-summary v-if="showCalendar" :dates="weekDates"></week-summary>
-        <div
-          v-show="showCalendar"
-          class="todo-lists-container"
-          :style="resizableStyle"
-          ref="calendarContainer"
-          :class="{
-            'full-screen': !showCustomList,
-            'hidden-lists-container': hideTopListContainer,
-            'full-screen-divider': hideBottomListContainer,
-          }"
-        >
-          <i class="bi-chevron-left slider-btn" ref="weekLeft" @click="weekMoveLeft"></i>
-          <div class="todo-slider weekdays" ref="weekListContainer">
-            <to-do-list
-              v-for="date in dates_array"
-              :key="date"
-              :id="date"
-              :showCustomList="showCustomList"
-              @todo-list-mounted="todoListMounted"
-            >
-            </to-do-list>
-          </div>
-          <i class="bi-chevron-right slider-btn" ref="weekRight" @click="weekMoveRight"></i>
+      <div class="h-100 d-flex flex-column planner-field">
+        <img class="botanical-decoration botanical-decoration-right" src="/assets/plates/botanical-right.png?v=3" alt="" aria-hidden="true" />
+        <div v-if="(showCalendar || showCustomList) && selected_date" class="garden-calendar-pane">
+          <garden-planner
+            :dates="weekDates"
+            :selected-date="selected_date"
+            :period-columns="periodColumns"
+            :periods="timeBlocks"
+            :custom-lists="customTodoLists"
+            :custom-lists-enabled="$store.getters.config.customList"
+            :initial-view="showCalendar ? 'day' : 'lists'"
+            @select-date="setSelectedDate"
+            @move-week="gardenMove"
+            @create-custom-list="createCustomList"
+          />
         </div>
 
-        <div
-          v-show="showCustomList && showCalendar"
-          class="main-horizontal-divider"
-          id="resizer"
-          :class="mainDividerPositionClass"
-          @mousedown="resizerMouseDownHandler"
-          @dblclick="resizerDblClick"
-        >
-          <div class="inner-main-horizontal-divider"></div>
-          <div class="divider-icons-container">
-            <i
-              class="bi-chevron-up move-to-center-up divider-icons"
-              @click="setDividerPosition(1)"
-              :title="$t('ui.restorePanel')"
-            ></i>
-            <i
-              class="bi-chevron-up move-to-corner-up divider-icons"
-              @click="setDividerPosition(2)"
-              :title="$t('ui.maximizeListPanel')"
-            ></i>
-            <i
-              class="bi-chevron-down move-to-center-down divider-icons"
-              @click="setDividerPosition(1)"
-              :title="$t('ui.restorePanel')"
-            ></i>
-            <i
-              class="bi-chevron-down move-to-corner-down divider-icons"
-              @click="setDividerPosition(0)"
-              :title="$t('ui.maximizeCalendarPanel')"
-            ></i>
-          </div>
-        </div>
-
-        <div
-          v-show="showCustomList"
-          class="todo-lists-container"
-          :class="{
-            'full-screen': !showCalendar,
-            'flex-grow-1': showCalendar,
-            'hidden-lists-container': hideBottomListContainer,
-          }"
-        >
-          <i
-            class="bi-chevron-left slider-btn"
-            @click="customMoveLeft"
-            :style="{
-              visibility: cTodoList.length > customColumns ? 'visible' : 'hidden',
-            }"
-          ></i>
-          <div class="todo-slider slides" ref="customListContainer">
-            <to-do-list
-              v-for="(cTodoList, index) in cTodoList"
-              :key="cTodoList.listId"
-              :id="cTodoList.listId"
-              :customTodoList="true"
-              :cTodoListIndex="index"
-              :showCustomList="showCustomList"
-              @todo-list-mounted="todoListMounted"
-            ></to-do-list>
-          </div>
-          <i
-            class="bi-chevron-right slider-btn"
-            @click="customMoveRight"
-            :style="{
-              visibility: cTodoList.length > customColumns ? 'visible' : 'hidden',
-            }"
-          ></i>
-        </div>
-
-        <div v-show="!showCustomList && !showCalendar" style="margin: auto">
+        <div v-if="!showCalendar && !showCustomList" style="margin: auto">
           <img v-if="darkTheme" src="/img/WeekToDoDarkLogo.webp" />
           <img v-else src="/img/WeekToDoLightLogo.webp" />
         </div>
@@ -137,7 +58,6 @@
 </template>
 
 <script>
-import toDoList from "./components/toDoList";
 import dateTime from "./helpers/dateTime";
 import sideBar from "./components/layout/sideBar";
 import customToDoListIdsRepository from "./repositories/customToDoListIdsRepository";
@@ -147,7 +67,6 @@ import configRepository from "./repositories/configRepository";
 import aboutModal from "./views/aboutModal";
 import accountModal from "./views/accountModal";
 import monthOverviewModal from "./views/monthOverviewModal";
-import weekSummary from "./components/weekSummary";
 import toDoModal from "./views/toDoModal/toDoModal";
 import tipsModal from "./views/tipsModal";
 import migrations from "./migrations/migrations";
@@ -162,18 +81,17 @@ import toDoListRepository from "./repositories/toDoListRepository";
 import ReorderCustomListsModal from "./views/ReorderCustomListsModal.vue";
 import activeToDo from "./components/activeToDo.vue";
 import tasksHelper from "./helpers/tasksHelper";
+import GardenPlanner from "./components/GardenPlanner.vue";
 
 export default {
   name: "App",
   components: {
     configModal,
-    toDoList,
     sideBar,
     removeCustomList,
     aboutModal,
     accountModal,
     monthOverviewModal,
-    weekSummary,
     tipsModal,
     toDoModal,
     clearDataModal,
@@ -182,6 +100,7 @@ export default {
     ReorderCustomListsModal,
     clearListModal,
     activeToDo,
+    GardenPlanner,
   },
   data() {
     return {
@@ -193,6 +112,7 @@ export default {
       initialListLoaded: 0,
       systemPrefersDark: false,
       systemThemeQuery: null,
+      viewMode: "week",
     };
   },
   beforeCreate() {
@@ -211,7 +131,7 @@ export default {
         let totalCustomListCount = this.$store.getters.cTodoListIds.length;
         this.initialListToLoad = totalDaysCount + totalCustomListCount;
         this.deleteOldRepeatingEvents();
-        this.selected_date = dateTime().format("YYYYMMDD");
+        this.selected_date = this.workweekDate(dateTime().format("YYYYMMDD"));
         this.$nextTick(() => {
           this.weekResetScroll();
         });
@@ -221,7 +141,6 @@ export default {
   },
   mounted() {
     this.checksOnLoadApp();
-    this.$refs.weekListContainer.scrollLeft = this.todoListWidth();
     this.calendarHeight = this.$store.getters.config.calendarHeight;
     window.addEventListener("resize", this.weekResetScroll);
     this.systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -239,9 +158,17 @@ export default {
 
     this.resetAppOnDayChange();
   },
+  watch: {
+    workweekOnly: function (enabled) {
+      if (enabled && this.selected_date) this.selected_date = this.workweekDate(this.selected_date);
+    },
+  },
   methods: {
     updateSystemTheme: function (event) {
       this.systemPrefersDark = event.matches;
+    },
+    gardenMove: function (days) {
+      this.selected_date = dateTime(this.selected_date).add(days, "d").format("YYYYMMDD");
     },
     weekMoveLeft: function () {
       this.selected_date = dateTime(this.selected_date).subtract(1, "d").format("YYYYMMDD");
@@ -270,7 +197,7 @@ export default {
       }
     },
     weekResetScroll: function () {
-      this.$refs.weekListContainer.scrollLeft = this.todoListWidth();
+      if (this.$refs.weekListContainer) this.$refs.weekListContainer.scrollLeft = this.viewMode === "day" ? 0 : this.todoListWidth();
     },
     customMoveRight: function () {
       this.$refs.customListContainer.scrollLeft =
@@ -290,14 +217,20 @@ export default {
     customTodoListWidth: function () {
       return this.$refs.customListContainer.clientWidth / this.customColumns;
     },
+    workweekDate: function (date) {
+      let selected = dateTime(date);
+      while (this.workweekOnly && (selected.day() === 0 || selected.day() === 6)) selected = selected.add(1, "d");
+      return selected.format("YYYYMMDD");
+    },
     setSelectedDate: function (date) {
-      this.selected_date = date;
-      this.$nextTick(function () {
-        document
-          .getElementById("list" + date)
-          .getElementsByClassName("new-todo-input")[0]
-          .focus();
-      });
+      this.selected_date = this.workweekDate(date);
+    },
+    createCustomList: function () {
+      const customTodoListId = { listId: dateTime().format("YYYYMMDDTHHmmssS"), listName: "" };
+      this.$store.commit("actionsCListCreatedUpdate", true);
+      this.$store.commit("newCustomTodoList", customTodoListId);
+      customToDoListIdsRepository.update(this.$store.getters.cTodoListIds);
+      toDoListRepository.update(customTodoListId.listId, this.$store.getters.todoLists[customTodoListId.listId]);
     },
     showAccountModal: function () {
       this.$refs.accountModal.open();
@@ -449,17 +382,34 @@ export default {
       return dates_array;
     },
     weekDates: function () {
-      // The outer adjacent days are present solely for the slider animation.
-      return this.dates_array.slice(1, -1);
+      if (!this.selected_date) return [];
+      const weekStart = this.workweekOnly || this.$store.getters.config.weekStartOnMonday ? 1 : 7;
+      let start = dateTime(this.selected_date).isoWeekday(weekStart);
+      if (this.$store.getters.config.startCalendarYesterday && !this.workweekOnly) start = start.subtract(1, "d");
+      const dayCount = this.workweekOnly ? 5 : 7;
+      return Array.from({ length: dayCount }, (_, index) => start.add(index, "d").format("YYYYMMDD"));
+    },
+    visibleDates: function () {
+      return this.viewMode === "day" ? [this.selected_date] : this.dates_array;
     },
     showCustomList: function () {
-      return this.$store.getters.config.customList;
+      return this.$store.getters.config.customList && this.$store.getters.cTodoListIds.length > 0;
+    },
+    customTodoLists: function () {
+      return this.$store.getters.cTodoListIds;
     },
     showCalendar: function () {
       return this.$store.getters.config.calendar;
     },
     columns: function () {
       return this.$store.getters.config.columns;
+    },
+    periodColumns: function () {
+      const count = Math.max(1, this.timeBlocks.length);
+      return Math.min(count, Math.max(1, Number(this.columns) || count));
+    },
+    timeBlocks: function () {
+      return this.$store.getters.config.timeBlocks || [];
     },
     customColumns: function () {
       return this.$store.getters.config.customColumns;
@@ -529,10 +479,40 @@ body {
   overflow: auto;
   min-height: 5px;
   height: 5px;
-  transition: height 0.15s ease-out 0s;
+  /* Height is user-controlled by the divider; avoid animating layout on drag. */
   margin-top: 20px;
   margin-bottom: 25px;
   // margin-bottom: 5px;
+}
+
+.garden-calendar-pane {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.garden-calendar-pane.split-pane {
+  flex: 0 0 auto;
+}
+
+.garden-calendar-pane > .garden-planner {
+  width: 100%;
+}
+
+.dark-theme .planner-field {
+  background: #101811;
+}
+
+.dark-theme .planner-field .botanical-decoration-right {
+  opacity: .3;
+  filter: saturate(.62) brightness(.9) blur(.65px);
+  mix-blend-mode: screen;
+}
+
+@media (max-width: 900px) {
+  .garden-calendar-pane.split-pane { height: 50% !important; }
 }
 
 .slider-btn {
@@ -609,13 +589,13 @@ body {
 
 /*----------------Dark Theme------------------*/
 .dark-theme {
-  background-color: #13171d;
-  color: #c9d1d9;
+  background-color: #101811;
+  color: #e2eadf;
 }
 
 .dark-theme input {
-  background-color: #13171d;
-  color: #c9d1d9;
+  background-color: #1d2b21;
+  color: #e2eadf;
 }
 
 .dark-theme input.form-range {
