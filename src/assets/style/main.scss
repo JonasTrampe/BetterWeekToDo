@@ -382,7 +382,100 @@ i {
 
 @media only screen and (max-width: 600px) {
   .hidden-mobile {
+    display: flex !important;
+  }
+
+  .app-body {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  }
+
+  .mobile {
     display: none !important;
+  }
+
+  .side-bar {
+    position: fixed;
+    z-index: 1040;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    height: calc(4rem + env(safe-area-inset-bottom)) !important;
+    padding: 0.35rem 0.5rem env(safe-area-inset-bottom);
+    flex-direction: row !important;
+    justify-content: space-around;
+    align-items: center;
+    border-right: 0 !important;
+    border-top: 1px solid #d2ddd3;
+  }
+
+  .side-bar .logo,
+  .side-bar .logo-white,
+  .side-bar .sidebar-extra-menu,
+  .side-bar > span {
+    display: none !important;
+  }
+
+  .side-bar > i,
+  .side-bar > .sidebar-icon {
+    min-width: 44px;
+    min-height: 44px;
+    margin: 0 !important;
+    padding: 0.7rem !important;
+    text-align: center;
+  }
+
+  .todo-lists-container {
+    margin: 0.5rem 0.35rem !important;
+    border-radius: 12px !important;
+  }
+
+  .weekdays {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .weekdays > .to-do-list-container {
+    flex: 0 0 88vw !important;
+    min-width: 88vw;
+    scroll-snap-align: center;
+    border-right: 0 !important;
+  }
+
+  .summary-heading {
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .summary-counts {
+    font-size: 0.75rem;
+  }
+
+  .view-switch button {
+    min-height: 44px;
+    min-width: 52px;
+  }
+
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+
+  .modal-content {
+    max-height: calc(100vh - 1rem);
+    overflow: auto;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  #config-links-menu {
+    width: 120px !important;
+    flex: 0 0 120px;
+  }
+
+  #confTab-content {
+    padding-left: 0.75rem !important;
+    padding-right: 0.25rem !important;
   }
 }
 
