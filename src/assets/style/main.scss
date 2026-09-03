@@ -380,16 +380,16 @@ i {
 
 /* Focus Garden surface */
 .app-container {
-  background-color: #f4f1ea;
-  color: #29332f;
+  background-color: #f7f3e9;
+  color: #334235;
 }
 
 .app-container:not(.dark-theme) .app-body {
-  background-color: #f4f1ea;
+  background-color: #f7f3e9;
 }
 
 .app-container:not(.dark-theme) .todo-lists-container {
-  background-color: #eef2eb;
+  background-color: #e2ecdE;
   border-radius: 16px;
   margin-left: 0.75rem;
   margin-right: 0.75rem;
@@ -397,7 +397,7 @@ i {
 }
 
 .app-container:not(.dark-theme) .to-do-list-container {
-  border-right: 1px solid #d8e1d8;
+  border-right: 1px solid #c5d6c1;
 }
 
 .app-container:not(.dark-theme) .to-do-list-container:last-child {
@@ -405,16 +405,16 @@ i {
 }
 
 .dark-theme {
-  background-color: #202925;
-  color: #e4ebe3;
+  background-color: #354235;
+  color: #f1ead9;
 }
 
 .dark-theme .app-body {
-  background-color: #202925;
+  background-color: #354235;
 }
 
 .dark-theme .todo-lists-container {
-  background-color: #29352f;
+  background-color: #465845;
   border-radius: 16px;
   margin-left: 0.75rem;
   margin-right: 0.75rem;
@@ -422,7 +422,7 @@ i {
 }
 
 .dark-theme .to-do-list-container {
-  border-right: 1px solid #3d4d43;
+  border-right: 1px solid #71816b;
 }
 
 .dark-theme .to-do-list-container:last-child {

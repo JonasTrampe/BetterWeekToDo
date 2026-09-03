@@ -367,15 +367,15 @@ export default {
 }
 
 .modal-content {
-  background-color: #f8f6f0;
-  color: #29332f;
-  border: 1px solid #d8e1d8;
+  background-color: #fbf8ef;
+  color: #334235;
+  border: 1px solid #c5d6c1;
 }
 
 .dark-theme .modal-content {
-  background-color: #29352f;
-  color: #e4ebe3;
-  border-color: #3d4d43;
+  background-color: #465845;
+  color: #f1ead9;
+  border-color: #71816b;
 }
 
 #config-links-menu {
