@@ -389,7 +389,7 @@ i {
 }
 
 .app-container:not(.dark-theme) .todo-lists-container {
-  background-color: #e2ecdE;
+  background-color: #e2ecde;
   border-radius: 16px;
   margin-left: 0.75rem;
   margin-right: 0.75rem;
@@ -398,7 +398,13 @@ i {
 
 .app-container:not(.dark-theme) .to-do-list-container {
   border-right: 1px solid #c5d6c1;
+  background-color: #edf4e8;
+  border-radius: 12px;
+  margin: 0 0.2rem;
 }
+
+.app-container:not(.dark-theme) .to-do-list-container:nth-child(3n) { background-color: #e3efdf; }
+.app-container:not(.dark-theme) .to-do-list-container:nth-child(3n + 1) { background-color: #e9f2e4; }
 
 .app-container:not(.dark-theme) .to-do-list-container:last-child {
   border-right: 0;
@@ -414,7 +420,7 @@ i {
 }
 
 .dark-theme .todo-lists-container {
-  background-color: #465845;
+  background-color: #314532;
   border-radius: 16px;
   margin-left: 0.75rem;
   margin-right: 0.75rem;
@@ -422,8 +428,14 @@ i {
 }
 
 .dark-theme .to-do-list-container {
-  border-right: 1px solid #71816b;
+  border-right: 1px solid #70886e;
+  background-color: #405843;
+  border-radius: 12px;
+  margin: 0 0.2rem;
 }
+
+.dark-theme .to-do-list-container:nth-child(3n) { background-color: #496149; }
+.dark-theme .to-do-list-container:nth-child(3n + 1) { background-color: #3b5741; }
 
 .dark-theme .to-do-list-container:last-child {
   border-right: 0;
