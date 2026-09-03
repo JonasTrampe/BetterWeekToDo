@@ -10,13 +10,7 @@
         <div class="modal-body px-0" style="display: flex">
           <ul class="nav nav-tabs" id="confTab" role="tablist" style="display: none">
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="config-home-tab" data-bs-toggle="tab" data-bs-target="#config-home"
-                role="tab">
-                Home
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="config-general-tab" data-bs-toggle="tab" data-bs-target="#config-general"
+              <button class="nav-link active" id="config-general-tab" data-bs-toggle="tab" data-bs-target="#config-general"
                 role="tab">
                 General
               </button>
@@ -341,9 +335,6 @@ export default {
       let importingModal = new Modal(document.getElementById("importingModal"), { backdrop: "static" });
       importingModal.show();
       exportTool.import(event);
-    },
-    goHome: function () {
-      document.getElementById("config-home-tab").click();
     },
     setLanguage: function () {
       this.changeConfig('language', this.configData.language);
