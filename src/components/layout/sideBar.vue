@@ -130,7 +130,8 @@ export default {
   display: flex;
   flex-direction: column;
   float: left;
-  background-color: #fcfcfc;
+  background-color: #e7eee7;
+  border-right: 1px solid #d2ddd3;
 }
 
 .side-bar > i:first-child {
@@ -156,7 +157,7 @@ export default {
 .side-bar i:hover,
 sidebar-icon:hover {
   border-radius: 6px;
-  background-color: #eaecef;
+  background-color: #d8e5da;
   color: black;
 }
 
@@ -216,8 +217,9 @@ sidebar-icon:active {
 /*------------------------Dark Theme*------------------*/
 
 .dark-theme .side-bar {
-  background-color: #161b22;
-  color: #ababab;
+  background-color: #26332d;
+  color: #c9d8cc;
+  border-right-color: #3d4d43;
 }
 
 .dark-theme .side-bar i:hover {

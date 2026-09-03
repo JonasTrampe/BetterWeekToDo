@@ -366,6 +366,18 @@ export default {
   height: 1.4em !important;
 }
 
+.modal-content {
+  background-color: #f8f6f0;
+  color: #29332f;
+  border: 1px solid #d8e1d8;
+}
+
+.dark-theme .modal-content {
+  background-color: #29352f;
+  color: #e4ebe3;
+  border-color: #3d4d43;
+}
+
 #config-links-menu {
   border-right: 1px solid rgba(0, 0, 0, 0.06);
 

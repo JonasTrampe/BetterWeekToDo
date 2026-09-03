@@ -42,5 +42,5 @@ export default {
 .view-switch button.active { background: #243b3a; color: #fff; }
 .view-switch button:focus-visible { outline: 3px solid #c86b4a; outline-offset: 2px; }
 .summary-title { font-weight: 600; color: inherit; }
-.dark-theme .week-summary { border-color: #30363d; color: #b1bac4; }
+.dark-theme .week-summary { border-color: #3d4d43; color: #c9d8cc; }
 </style>
