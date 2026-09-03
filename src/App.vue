@@ -5,7 +5,7 @@
       <side-bar @change-date="setSelectedDate" @open-account="showAccountModal"></side-bar>
 
       <div class="h-100 d-flex flex-column">
-        <week-summary v-if="showCalendar" :dates="weekDates"></week-summary>
+        <week-summary v-if="showCalendar" :dates="viewMode === 'day' ? [selected_date] : weekDates" :view-mode="viewMode" @change-view="viewMode = $event"></week-summary>
         <div
           v-show="showCalendar"
           class="todo-lists-container"
@@ -20,10 +20,11 @@
           <i class="bi-chevron-left slider-btn" ref="weekLeft" @click="weekMoveLeft"></i>
           <div class="todo-slider weekdays" ref="weekListContainer">
             <to-do-list
-              v-for="date in dates_array"
+              v-for="date in visibleDates"
               :key="date"
               :id="date"
               :showCustomList="showCustomList"
+              :singleDay="viewMode === 'day'"
               @todo-list-mounted="todoListMounted"
             >
             </to-do-list>
@@ -193,6 +194,7 @@ export default {
       initialListLoaded: 0,
       systemPrefersDark: false,
       systemThemeQuery: null,
+      viewMode: "week",
     };
   },
   beforeCreate() {
@@ -270,7 +272,7 @@ export default {
       }
     },
     weekResetScroll: function () {
-      this.$refs.weekListContainer.scrollLeft = this.todoListWidth();
+      if (this.$refs.weekListContainer) this.$refs.weekListContainer.scrollLeft = this.viewMode === "day" ? 0 : this.todoListWidth();
     },
     customMoveRight: function () {
       this.$refs.customListContainer.scrollLeft =
@@ -452,6 +454,9 @@ export default {
       // The outer adjacent days are present solely for the slider animation.
       return this.dates_array.slice(1, -1);
     },
+    visibleDates: function () {
+      return this.viewMode === "day" ? [this.selected_date] : this.dates_array;
+    },
     showCustomList: function () {
       return this.$store.getters.config.customList;
     },
@@ -529,7 +534,7 @@ body {
   overflow: auto;
   min-height: 5px;
   height: 5px;
-  transition: height 0.15s ease-out 0s;
+  /* Height is user-controlled by the divider; avoid animating layout on drag. */
   margin-top: 20px;
   margin-bottom: 25px;
   // margin-bottom: 5px;
