@@ -1,5 +1,5 @@
-# Build the static Vue application. This image is not used at runtime.
-FROM node:24-alpine AS build
+# Build the Vue application for the API container to serve.
+FROM node:24-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf AS build
 
 WORKDIR /app
 
@@ -9,10 +9,20 @@ RUN npm ci --ignore-scripts && npm cache clean --force
 COPY . .
 RUN npm run build
 
-# HAProxy terminates TLS and proxies HTTP to this unprivileged static server.
-FROM nginxinc/nginx-unprivileged:1.30-alpine-slim
+FROM node:24-alpine@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf
 
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+WORKDIR /app
+ENV NODE_ENV=production
 
-EXPOSE 8080
+COPY server/package.json server/package-lock.json ./
+RUN apk upgrade --no-cache \
+    && npm ci --omit=dev --ignore-scripts \
+    && npm cache clean --force \
+    && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+
+COPY server/src ./src
+COPY --from=build /app/dist ./public
+
+USER node
+EXPOSE 3000
+CMD ["node", "src/index.js"]
