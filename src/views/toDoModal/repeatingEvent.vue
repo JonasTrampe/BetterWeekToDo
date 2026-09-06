@@ -142,7 +142,7 @@ export default {
         repeatingEventRepository.update(repeatingEventId, re_event);
         this.$store.commit("updateRepeatingEvent", { key: repeatingEventId, val: re_event });
         this.$store.commit("addRepeatingEventToDateCache", re_event);
-        this.$store.getters.selectedDates.forEach((date) => {
+        Object.keys(this.$store.getters.todoLists).forEach((date) => {
           repeatingEventHelper.generateRepeatingEventsIntances(date, this);
         });
       } else {

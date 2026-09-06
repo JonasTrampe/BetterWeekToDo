@@ -16,13 +16,13 @@ const mutations = {
     state.repeatingEventDateCache = {};
   },
   loadRepeatingEventDateCache(state, repeatingEventList) {
-    var today = new Date();
+    var today = dateTime.utc().startOf("day").toDate();
     var future_date = new Date();
 
-    future_date.setFullYear(today.getFullYear() + 10);
+    future_date.setFullYear(future_date.getFullYear() + 10);
     for (const [id, re] of Object.entries(repeatingEventList)) {
       const rule = rrulestr(re.repeating_rule);
-      rule.between(today, future_date).forEach((date) => {
+      rule.between(today, future_date, true).forEach((date) => {
         if (state.repeatingEventDateCache[dateTime.utc(date).format("YYYYMMDD")]) {
           state.repeatingEventDateCache[dateTime.utc(date).format("YYYYMMDD")].push(id);
         } else {
@@ -32,11 +32,11 @@ const mutations = {
     }
   },
   addRepeatingEventToDateCache(state, re) {
-    var today = new Date();
+    var today = dateTime.utc().startOf("day").toDate();
     var future_date = new Date();
-    future_date.setFullYear(today.getFullYear() + 10);
+    future_date.setFullYear(future_date.getFullYear() + 10);
     const rule = rrulestr(re.repeating_rule);
-    rule.between(today, future_date).forEach((date) => {
+    rule.between(today, future_date, true).forEach((date) => {
       if (state.repeatingEventDateCache[dateTime.utc(date).format("YYYYMMDD")]) {
         state.repeatingEventDateCache[dateTime.utc(date).format("YYYYMMDD")].push(re.id);
       } else {

@@ -50,24 +50,19 @@ export default {
   padding: 10px 20px;
 }
 
-.dark-theme .modal-content {
-  background-color: #21262d;
-  border: 1px solid #30363d;
-}
-
 .main-icon {
   margin-top: 5px;
   background: -webkit-linear-gradient(180deg,
-      rgba(89, 66, 141, 1) 0%,
-      rgba(114, 78, 156, 1) 90%);
+      #c86d3e 0%,
+      #b85c35 90%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .dark-theme .main-icon {
   background: -webkit-linear-gradient(180deg,
-      rgb(115, 75, 176) 0%,
-      rgb(147, 110, 203) 90%);
+      #e08a5c 0%,
+      #c86d3e 90%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

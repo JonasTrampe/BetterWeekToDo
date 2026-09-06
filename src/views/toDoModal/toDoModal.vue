@@ -619,6 +619,10 @@ export default {
   width: 1px;
   background-color: #b9b9b9;
   margin: 0px 4px 0px 4px;
+
+  .dark-theme & {
+    background-color: #71816b;
+  }
 }
 
 .todo-title {

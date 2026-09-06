@@ -17,8 +17,14 @@
             :class="{ 'show-alarm-indicator': notificationIndicator && activeTodo.toDo.alarm }"></div>
         </span>
       </span>
-      <i class="bi-three-dots todo-item-menu" type="button" @click="showToDoDetails"></i>
+      <button class="bi-three-dots todo-item-menu" type="button" aria-label="Task actions" @click.stop="menuOpen = !menuOpen"></button>
       <i class="bi-x todo-item-remove" @click="removeTodo"></i>
+    </div>
+    <div v-if="menuOpen" class="task-action-menu">
+      <button type="button" @click="showToDoDetails">Edit task</button>
+      <button type="button" @click="moveToDate(0)">Move to today</button>
+      <button type="button" @click="moveToDate(1)">Move to tomorrow</button>
+      <button v-for="list in $store.getters.cTodoListIds" :key="list.listId" type="button" @click="moveToList(list.listId)">Move to {{ list.listName || 'custom list' }}</button>
     </div>
 
     <div v-if="activeTodo.toDo.subTaskList && activeTodo.toDo.subTaskList.length > 0" class="todo-item-sub-tasks">
@@ -56,12 +62,29 @@ export default {
       editing: false,
       todoDragHover: false,
       todoDragging: false,
+      menuOpen: false,
       options: { target: '_blank', defaultProtocol: 'https', attributes: { rel: 'noopener noreferrer' } },
       clickhandler: new ClickHandler(),
       scrollingTimeOut: null
     };
   },
   methods: {
+    async moveToDate(days) {
+      const destination = dateTime().add(days, 'day').format('YYYYMMDD');
+      await this.moveToList(destination);
+    },
+    async moveToList(destination) {
+      const origin = this.activeTodo.toDoListId;
+      if (!destination || destination === origin) return;
+      await this.$store.dispatch('loadTodoLists', destination);
+      const [task] = this.$store.getters.todoLists[origin].splice(this.activeTodo.index, 1);
+      task.listId = destination;
+      this.$store.getters.todoLists[destination].unshift(task);
+      toDoListRepository.update(origin, this.$store.getters.todoLists[origin]);
+      toDoListRepository.update(destination, this.$store.getters.todoLists[destination]);
+      this.menuOpen = false;
+      this.hideToDoItem();
+    },
     removeTodo: function () {
       this.$store.commit("setUndoElement", { type: 'task', todo: this.activeTodo.toDo, index: this.activeTodo.index });
       this.$store.commit("removeTodo", { toDoListId: this.activeTodo.toDoListId, index: this.activeTodo.index, });
@@ -176,6 +199,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.task-action-menu { display: flex; flex-wrap: wrap; gap: .25rem; padding: .35rem .5rem .5rem; border-top: 1px solid #d8d5ca; background: #fcfaf5; }
+.task-action-menu button { min-height: 2rem; border: 1px solid #b8c5b5; border-radius: 5px; background: transparent; color: #263a2d; padding: .2rem .45rem; font-size: .72rem; }
+.task-action-menu button:hover,.task-action-menu button:focus-visible { background: #e7eee4; outline: 2px solid #c86d3e; outline-offset: 1px; }
+.dark-theme .task-action-menu { border-color: #405443; background: #1c2a20; }
+.dark-theme .task-action-menu button { border-color: #718670; color: #e3ebe0; }
+.dark-theme .task-action-menu button:hover,.dark-theme .task-action-menu button:focus-visible { background: #2b3d2e; }
 .todo-item {
   background-color: #ffffff;
   color: #1e1e1e;

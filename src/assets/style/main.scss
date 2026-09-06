@@ -1,5 +1,21 @@
 @use "globalVars" as *;
 
+@font-face {
+  font-family: "Garden Serif";
+  src: url('/assets/fonts/NotoSerifDisplay-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Garden Serif";
+  src: url('/assets/fonts/NotoSerifDisplay-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
   color: $text-color;
   background-color: #faf7f0;
@@ -8,34 +24,62 @@ body {
 h1, h2, h3, h4, h5, h6,
 .modal-title,
 .summary-title {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Garden Serif", serif;
   font-weight: 500;
   letter-spacing: -0.02em;
 }
 
-* {
-  user-select: none;
-  -moz-user-select: none;
-  -webkit-user-drag: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-}
-
 .app-container {
   height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 8% 92%, rgba(124, 146, 113, .16), transparent 18rem),
+    radial-gradient(circle at 96% 8%, rgba(198, 120, 79, .08), transparent 15rem),
+    #faf7f0;
+}
+
+.botanical-decoration {
+  position: absolute;
+  z-index: 0;
+  width: clamp(16rem, 22vw, 22rem);
+  height: 100%;
+  object-fit: contain;
+  object-position: right bottom;
+  opacity: 1;
+  pointer-events: none;
+  user-select: none;
+}
+.botanical-decoration-right {
+  right: 0;
+  bottom: 0;
+  opacity: .76;
+  filter: blur(.8px);
+  -webkit-mask-image: linear-gradient(to left, #000 55%, rgba(0,0,0,.9) 72%, transparent 100%);
+  mask-image: linear-gradient(to left, #000 55%, rgba(0,0,0,.9) 72%, transparent 100%);
+}
+
+.dark-theme.app-container {
+  background: #101811;
 }
 
 .app-body {
   height: 100%;
+  display: flex;
 }
 
-.hiddenSplashScreen {
-  opacity: 0;
-  visibility: hidden;
+.planner-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 0;
+  position: relative;
+  background: #faf7f0;
+  overflow: hidden;
 }
 
-#splashScreen {
-  transition: opacity 0.7s, visibility 0.7s cubic-bezier(0.2, 1, 0.1, 1);
+.app-body > .h-100 {
+  position: relative;
+  z-index: 1;
 }
 
 .todo-item {
@@ -168,12 +212,18 @@ i {
   opacity: unset !important;
   transition: background-color 0.15s linear;
   background-color: rgba(0, 0, 0, 0);
+  /* Blur the page behind the dialog, while allowing the dialog to remain
+     crisp. The app shell must not create an isolated stacking context. */
   backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 1050;
 }
 
 .modal-backdrop.show {
   background-color: rgba(0, 0, 0, 0.4);
 }
+
+.modal { z-index: 1060; }
 
 .modal-header {
   padding: 0.8rem 0.8rem;
@@ -188,8 +238,9 @@ i {
 }
 
 .dark-theme .modal-content {
-  background-color: #21262d;
-  border: 1px solid #30363d;
+  background-color: #1c2a20;
+  border: 1px solid #405443;
+  color: #e3ebe0;
 }
 
 .close-modal {
@@ -203,17 +254,17 @@ i {
 }
 
 .dark-theme .close-modal {
-  color: #c9d1d9;
+  color: #b5c5b4;
 }
 
 .dark-theme .close-modal:hover {
-  color: white;
+  color: #e3ebe0;
 }
 
 .dark-theme .form-select {
-  background-color: #15161e;
-  border: 1px solid #30363d;
-  color: #c9d1d9;
+  background-color: #1c2a20;
+  border: 1px solid #405443;
+  color: #e3ebe0;
 }
 
 .btn:focus {
@@ -233,17 +284,17 @@ i {
 }
 
 .dark-theme .modal-content .btn {
-  color: #c9d1d9;
+  color: #e3ebe0;
 }
 
 .dark-theme .modal-content .btn:hover {
-  color: #c9d1d9;
-  background-color: #2e353d;
+  color: #e3ebe0;
+  background-color: #2b3d2e;
 }
 
 .dark-theme .modal-content .btn:active {
-  color: #c9d1d9;
-  background-color: #343b43;
+  color: #e3ebe0;
+  background-color: #344a37;
 }
 
 #todo-date-picker-input {
@@ -366,17 +417,8 @@ i {
 .ready-to-print {
   .mobile,
   .side-bar,
-  .todo-lists-container > .slider-btn,
   .sidebar-extra-menu,
   .divider-icons-container {
-    display: none !important;
-  }
-
-  .weekdays > .to-do-list-container:first-child {
-    display: none !important;
-  }
-
-  .weekdays > .to-do-list-container:last-child {
     display: none !important;
   }
 }
@@ -394,29 +436,7 @@ i {
 }
 
 .app-container:not(.dark-theme) .app-body {
-  background-color: #f7f3e9;
-}
-
-.app-container:not(.dark-theme) .todo-lists-container {
-  background-color: #e2ecde;
-  border-radius: 16px;
-  margin-left: 0.75rem;
-  margin-right: 0.75rem;
-  padding: 0.5rem 0;
-}
-
-.app-container:not(.dark-theme) .to-do-list-container {
-  border-right: 1px solid #c5d6c1;
-  background-color: #edf4e8;
-  border-radius: 12px;
-  margin: 0 0.2rem;
-}
-
-.app-container:not(.dark-theme) .to-do-list-container:nth-child(3n) { background-color: #e3efdf; }
-.app-container:not(.dark-theme) .to-do-list-container:nth-child(3n + 1) { background-color: #e9f2e4; }
-
-.app-container:not(.dark-theme) .to-do-list-container:last-child {
-  border-right: 0;
+  background-color: transparent;
 }
 
 .dark-theme {
@@ -425,34 +445,35 @@ i {
 }
 
 .dark-theme .app-body {
-  background-color: #354235;
+  background-color: transparent;
 }
 
-.dark-theme .todo-lists-container {
-  background-color: #314532;
-  border-radius: 16px;
-  margin-left: 0.75rem;
-  margin-right: 0.75rem;
-  padding: 0.5rem 0;
+/* Night garden: every surface belongs to the same dark material family. */
+.dark-theme.app-container,
+.dark-theme .app-body,
+.dark-theme .planner-field {
+  background: #101811 !important;
+  color: #e3ebe0;
 }
 
-.dark-theme .to-do-list-container {
-  border-right: 1px solid #70886e;
-  background-color: #405843;
-  border-radius: 12px;
-  margin: 0 0.2rem;
-}
+.dark-theme .side-bar { background: #162119 !important; border-color: #405443 !important; }
+.dark-theme .sidebar-intro { border-color: #405443 !important; }
+.dark-theme .sidebar-kicker,.dark-theme .sidebar-lede,.dark-theme .side-bar > button:not(.logo-button),.dark-theme .sidebar-icon { color: #e3ebe0 !important; }
+.dark-theme .sidebar-note { color: #b5c5b4 !important; }
+.dark-theme .side-bar > button:not(.logo-button),.dark-theme .sidebar-icon { background: transparent !important; }
+.dark-theme .side-bar > button:not(.logo-button):hover,.dark-theme .sidebar-icon:hover { background: #2b3d2e !important; color: #fff !important; }
+.dark-theme .sidebar-vine,.dark-theme .sidebar-garden { opacity: .7; filter: saturate(.65) brightness(.78); }
 
-.dark-theme .to-do-list-container:nth-child(3n) { background-color: #496149; }
-.dark-theme .to-do-list-container:nth-child(3n + 1) { background-color: #3b5741; }
-
-.dark-theme .to-do-list-container:last-child {
-  border-right: 0;
-}
+/* Garden planner dark-theme rules live in GardenPlanner.vue / GardenTaskRow.vue / GardenPlot.vue / GardenPlotHeader.vue (scoped), not here. */
 
 /*Media querys*/
+.dark-theme .garden-planner h1,.dark-theme .garden-planner h2,.dark-theme .garden-planner h3 { color: #e3ebe0 !important; }
+.dark-theme .garden-planner .garden-day-heading p { color: #b5c5b4 !important; }
+.dark-theme .garden-planner .garden-completed { background: #1c2a20 !important; }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 900px), only screen and (max-height: 760px) {
+  .botanical-decoration { display: none; }
+
   .hidden-mobile {
     display: flex !important;
   }
@@ -460,6 +481,8 @@ i {
   .app-body {
     padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
   }
+
+  .planner-field { padding-right: 0; }
 
   .mobile {
     display: none !important;
@@ -479,52 +502,30 @@ i {
     align-items: center;
     border-right: 0 !important;
     border-top: 1px solid #d2ddd3;
+    background-image: none;
   }
+
+  .sidebar-intro { display: none; }
 
   .side-bar .logo,
   .side-bar .logo-white,
-  .side-bar .sidebar-extra-menu,
   .side-bar > span {
     display: none !important;
   }
 
-  .side-bar > i,
+  .side-bar > button:not(.logo-button),
   .side-bar > .sidebar-icon {
     min-width: 44px;
     min-height: 44px;
     margin: 0 !important;
     padding: 0.7rem !important;
     text-align: center;
+    align-self: center;
+    display: block;
+    padding-left: 0.7rem !important;
   }
 
-  .todo-lists-container {
-    margin: 0.5rem 0.35rem !important;
-    border-radius: 12px !important;
-  }
-
-  .weekdays {
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-  }
-
-  .weekdays > .to-do-list-container {
-    flex: 0 0 88vw !important;
-    min-width: 88vw;
-    scroll-snap-align: center;
-    border-right: 0 !important;
-  }
-
-  .summary-heading {
-    min-width: 0;
-    flex-direction: column;
-    gap: 0.1rem;
-  }
-
-  .week-summary {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-  }
+  .sidebar-action::after { display: none; }
 
   .summary-counts {
     font-size: 0.75rem;
@@ -554,7 +555,8 @@ i {
     padding-right: 12px;
   }
 
-  #config-links-menu {
+  #config-links-menu,
+  .settings-links {
     width: 120px !important;
     flex: 0 0 120px;
   }
@@ -565,7 +567,7 @@ i {
   }
 }
 
-@media only screen and (min-width: 601px) {
+@media only screen and (min-width: 901px) {
   .mobile {
     display: none !important;
   }
