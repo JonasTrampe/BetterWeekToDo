@@ -11,22 +11,32 @@ import { Pool } from "pg";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { z } from "zod";
 
-const required = (name) => {
-  const value = process.env[name];
+const readConfigValue = async (name) => {
+  const file = process.env[`${name}_FILE`];
+  if (file) return (await fs.readFile(file, "utf8")).trim();
+  return process.env[name];
+};
+
+const required = (name, value = process.env[name]) => {
   if (!value) throw new Error(`${name} must be configured`);
   return value;
 };
 
+const databasePassword = await readConfigValue("POSTGRES_PASSWORD");
+const databaseUrl = (await readConfigValue("DATABASE_URL")) ||
+  `postgresql://${encodeURIComponent(process.env.POSTGRES_USER || "weektodoonline")}:${encodeURIComponent(required("POSTGRES_PASSWORD", databasePassword))}` +
+  `@${process.env.POSTGRES_HOST || "database"}:${process.env.POSTGRES_PORT || "5432"}/${encodeURIComponent(process.env.POSTGRES_DB || "weektodoonline")}`;
+
 const config = {
-  databaseUrl: required("DATABASE_URL"),
+  databaseUrl,
   publicBaseUrl: required("PUBLIC_BASE_URL").replace(/\/$/, ""),
   cookieName: "weektodoonline_session",
   nodeEnv: process.env.NODE_ENV || "production",
-  smtpUrl: process.env.SMTP_URL,
+  smtpUrl: await readConfigValue("SMTP_URL"),
   mailFrom: process.env.MAIL_FROM,
   oidcIssuer: process.env.OIDC_ISSUER_URL?.replace(/\/$/, ""),
   oidcClientId: process.env.OIDC_CLIENT_ID,
-  oidcClientSecret: process.env.OIDC_CLIENT_SECRET,
+  oidcClientSecret: await readConfigValue("OIDC_CLIENT_SECRET"),
   allowRegistration: process.env.ALLOW_REGISTRATION === "true",
 };
 
@@ -45,7 +55,25 @@ const pool = new Pool({ connectionString: config.databaseUrl });
 const app = express();
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
-app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+app.use(helmet({
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      baseUri: ["'self'"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", "data:"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      imgSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      scriptSrc: ["'self'"],
+      scriptSrcAttr: ["'none'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      upgradeInsecureRequests: config.nodeEnv === "production" ? [] : null,
+    },
+  },
+}));
 app.use(express.json({ limit: "5mb", type: "application/json" }));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 1_000, standardHeaders: "draft-8", legacyHeaders: false }));
 
@@ -335,6 +363,17 @@ app.get("/api/auth/oidc/callback", async (request, response, next) => {
     next(error);
   }
 });
+
+const staticRoot = process.env.STATIC_ROOT;
+if (staticRoot) {
+  try {
+    await fs.access(path.join(staticRoot, "index.html"));
+    app.use(express.static(staticRoot, { index: false, maxAge: "1y", immutable: true }));
+    app.get(/^\/(?!api(?:\/|$)).*/, (_request, response) => response.sendFile(path.join(staticRoot, "index.html")));
+  } catch {
+    console.warn(`Static frontend was not found at ${staticRoot}`);
+  }
+}
 
 app.use((error, _request, response, _next) => {
   console.error(error);
