@@ -8,14 +8,14 @@
       src="/img/logo-color.svg"
       width="42"
       height="42"
-      alt="WeekToDoOnline logo"
+      alt="BetterWeekToDo logo"
     />
     <img
       class="logo logo-white"
       src="/img/logo-white.svg"
       width="42"
       height="42"
-      alt="WeekToDoOnline logo"
+      alt="BetterWeekToDo logo"
     />
     </button>
     <div class="sidebar-intro">

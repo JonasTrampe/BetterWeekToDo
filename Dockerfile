@@ -22,6 +22,7 @@ RUN apk upgrade --no-cache \
 
 COPY server/src ./src
 COPY --from=build /app/dist ./public
+COPY LICENSE NOTICE ./public/
 
 USER node
 EXPOSE 3000

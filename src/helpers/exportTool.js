@@ -8,7 +8,7 @@ const DB_TABLES = ["todo_lists", "repeating_events", "repeating_events_by_date"]
 
 export default {
   export() {
-    const filename = "WeekToDoOnlineBackup.wtdb";
+    const filename = "BetterWeekToDoBackup.wtdb";
     createBackupData().then((data) => createExportLink(filename, JSON.stringify(data)));
   },
   import(event) {

@@ -190,7 +190,7 @@ app.post("/api/auth/register", authLimiter, async (request, response, next) => {
     const token = await issueToken(created.rows[0].id, "verify_email", 24);
     await sendMail({
       to: created.rows[0].email,
-      subject: "Verify your WeekToDoOnline account",
+      subject: "Verify your BetterWeekToDo account",
       text: `Open ${config.publicBaseUrl}/api/auth/verify-email?token=${encodeURIComponent(token)} to verify your account. This link expires in 24 hours.`,
     });
     response.status(202).json({ message: "Check your email to verify your account." });
@@ -238,7 +238,7 @@ app.post("/api/auth/forgot-password", authLimiter, async (request, response, nex
       const token = await issueToken(result.rows[0].id, "password_reset", 1);
       await sendMail({
         to: result.rows[0].email,
-        subject: "Reset your WeekToDoOnline password",
+        subject: "Reset your BetterWeekToDo password",
         text: `Open ${config.publicBaseUrl}/#reset-password=${encodeURIComponent(token)} to reset your password. This link expires in one hour.`,
       });
     }
@@ -402,4 +402,4 @@ await pool.query(await fs.readFile(schemaPath, "utf8"));
 await cleanupExpiredAuthRecords();
 const cleanupTimer = setInterval(() => cleanupExpiredAuthRecords().catch((error) => console.error("Authentication cleanup failed", error)), 6 * 60 * 60 * 1000);
 cleanupTimer.unref();
-app.listen(process.env.PORT || 3000, "0.0.0.0", () => console.log("WeekToDoOnline API listening"));
+app.listen(process.env.PORT || 3000, "0.0.0.0", () => console.log("BetterWeekToDo API listening"));
