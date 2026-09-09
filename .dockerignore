@@ -2,6 +2,7 @@
 .gitignore
 .env
 .env.*
+.impeccable
 secrets
 node_modules
 dist

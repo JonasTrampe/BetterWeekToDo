@@ -22,6 +22,8 @@ frontend https
     default_backend betterweektodo_web
 
 backend betterweektodo_web
+    # Replace any client-supplied value so API rate limits use the real client IP.
+    http-request set-header X-Forwarded-For %[src]
     server betterweektodo 127.0.0.1:8080 check
 ```
 
@@ -33,7 +35,7 @@ Built-in login is the default. It uses bcrypt password hashes, a minimum 12-char
 
 Set the SMTP values for built-in registration and password resets. Registration is disabled by default; set `ALLOW_REGISTRATION=true` only while new accounts should be allowed. In production, registration is also unavailable when SMTP is not configured.
 
-OIDC is optional. Set `OIDC_ISSUER_URL` and `OIDC_CLIENT_ID`, then write the client secret to `secrets/oidc_client_secret`, to expose the secondary provider endpoints at `/api/auth/oidc/login` and `/api/auth/oidc/callback`. Leave the issuer and client ID unset to disable this route.
+OIDC is optional. Set `OIDC_ISSUER_URL` (the full HTTPS issuer URL, including its path when your provider uses one) and `OIDC_CLIENT_ID`, then write the client secret to `secrets/oidc_client_secret`, to expose the secondary provider endpoints at `/api/auth/oidc/login` and `/api/auth/oidc/callback`. Leave the issuer and client ID unset to disable this route.
 
 ## Backups and recovery
 
