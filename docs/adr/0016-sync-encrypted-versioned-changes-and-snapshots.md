@@ -1,0 +1,3 @@
+# Synchronize encrypted versioned changes and snapshots
+
+Synchronization uses immutable MLS-protected application messages rather than replacing whole-account backups. Each change names an opaque entity and parent version, while the server assigns an ordered cursor and stores ciphertext without reading planner content; sibling versions create user-resolved conflicts, and their resolution references every resolved parent. Client-produced encrypted snapshots use vetted MLS-derived protection rather than custom encryption. The current snapshot is retained until scope deletion; encrypted messages are retained for ninety days before compaction, while minimal opaque ancestry and deletion metadata remain so long-absent installations cannot silently resurrect or overwrite data.
