@@ -1,5 +1,5 @@
 ---
-name: WeekToDoOnline
+name: BetterWeekToDo
 description: A calm weekly planner composed as a warm, editorial garden journal.
 colors:
   paper-ground: "#faf7f0"
@@ -99,13 +99,13 @@ components:
     padding: "16px 19px"
 ---
 
-# Design System: WeekToDoOnline
+# Design System: BetterWeekToDo
 
 ## Overview
 
 **Creative North Star: "The Focus Garden"**
 
-WeekToDoOnline is a quiet working garden laid out on warm, uncoated paper. It combines the composure of an editorial journal with the practical clarity of a weekly planner: dates establish orientation, user-selected time-of-day plots divide the work into manageable zones, and generous emptiness keeps the interface usable when attention or energy is limited.
+BetterWeekToDo is a quiet working garden laid out on warm, uncoated paper. It combines the composure of an editorial journal with the practical clarity of a weekly planner: dates establish orientation, user-selected time-of-day plots divide the work into manageable zones, and generous emptiness keeps the interface usable when attention or energy is limited.
 
 The botanical identity lives at the edges. Watercolor leaves, herbs, flowers, pots, and garden tools frame the desktop shell in deliberately reserved gutters; they never sit behind task text, controls, or the active planning grid. Sage marks place and completion, while terracotta is a small, warm signal for time, focus, and action.
 

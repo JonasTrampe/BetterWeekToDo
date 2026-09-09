@@ -19,10 +19,10 @@ HAProxy must terminate TLS and route the public hostname to the combined app con
 ```haproxy
 frontend https
     bind :443 ssl crt /etc/haproxy/certs/tasks.example.com.pem
-    default_backend weektodoonline_web
+    default_backend betterweektodo_web
 
-backend weektodoonline_web
-    server weektodoonline 127.0.0.1:8080 check
+backend betterweektodo_web
+    server betterweektodo 127.0.0.1:8080 check
 ```
 
 If HAProxy runs in Docker instead of on the host, remove the host port and attach HAProxy to the Compose network. Do not expose PostgreSQL publicly.

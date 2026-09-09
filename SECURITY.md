@@ -1,6 +1,6 @@
 # Security policy
 
-WeekToDoOnline is intended for self-hosting behind TLS. Report vulnerabilities privately to the operator or repository maintainer; do not include exploit details in a public issue.
+BetterWeekToDo is intended for self-hosting behind TLS. Report vulnerabilities privately to the operator or repository maintainer; do not include exploit details in a public issue.
 
 ## Data handling
 

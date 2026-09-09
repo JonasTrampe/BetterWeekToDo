@@ -12,7 +12,7 @@ People with ADHD, depression, or autism who need a clean, workable planning inte
 
 ## Product Purpose
 
-WeekToDoOnline enables users to build concise weekly plans and manage their tasks without unnecessary cognitive or visual distraction. Success means a user can quickly understand the week, capture tasks, and maintain a workable plan.
+BetterWeekToDo enables users to build concise weekly plans and manage their tasks without unnecessary cognitive or visual distraction. Success means a user can quickly understand the week, capture tasks, and maintain a workable plan.
 
 ## Positioning
 
@@ -35,7 +35,7 @@ Users review and update plans throughout the week, often in short sessions or du
 
 ## Brand Commitments
 
-The product name is WeekToDoOnline. The interface should remain concise, calm, and non-distracting.
+The product name is BetterWeekToDo. The interface should remain concise, calm, and non-distracting.
 
 ## Evidence on Hand
 

@@ -1,9 +1,14 @@
 {
-  "name": "weektodo-online",
+  "name": "betterweektodo",
   "version": "2.3.0",
   "private": true,
+  "license": "GPL-3.0-only",
   "description": "Self-hosted weekly planner with local-first data and optional accounts.",
-  "homepage": "",
+  "homepage": "https://github.com/JonasTrampe/BetterWeekToDo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JonasTrampe/BetterWeekToDo.git"
+  },
   "keywords": [
     "ToDo",
     "Weekly Planner",
@@ -17,7 +22,6 @@
     "lint": "eslint src tests vite.config.js",
     "test": "vitest run"
   },
-  "repository": "",
   "dependencies": {
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",

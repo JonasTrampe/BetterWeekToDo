@@ -1,4 +1,4 @@
-# Security review — WeekToDoOnline
+# Security review — BetterWeekToDo
 
 **Updated:** 2026-09-03
 **Scope:** Vue client, local backup/sync paths, Node.js authentication API, PostgreSQL schema, Docker/HAProxy deployment, CI, and dependency trees.

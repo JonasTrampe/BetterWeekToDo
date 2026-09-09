@@ -1,4 +1,4 @@
-# Contributing to WeekToDoOnline
+# Contributing to BetterWeekToDo
 
 Contributions are welcome. This project is web-only: changes must not reintroduce Electron or other desktop packaging.
 
