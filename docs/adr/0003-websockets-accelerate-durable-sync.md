@@ -1,0 +1,3 @@
+# Use WebSockets to accelerate durable synchronization
+
+Connected clients receive near-real-time change notifications and immediately apply non-conflicting remote changes, while conflicts enter a non-blocking review queue. WebSockets are only an accelerator: durable local changes, HTTP synchronization, and resumable cursors remain authoritative because browsers and mobile operating systems may suspend or silently disconnect live connections. An ordinary connection loss changes sync status and automatically resumes this process; explicit Offline mode is the deliberate exception and suppresses server communication until the user leaves it.
