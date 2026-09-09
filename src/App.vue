@@ -384,7 +384,10 @@ export default {
     weekDates: function () {
       if (!this.selected_date) return [];
       const weekStart = this.workweekOnly || this.$store.getters.config.weekStartOnMonday ? 1 : 7;
-      let start = dateTime(this.selected_date).isoWeekday(weekStart);
+      const selectedDate = dateTime(this.selected_date);
+      let start = weekStart === 7
+        ? selectedDate.subtract(selectedDate.day(), "d")
+        : selectedDate.isoWeekday(weekStart);
       if (this.$store.getters.config.startCalendarYesterday && !this.workweekOnly) start = start.subtract(1, "d");
       const dayCount = this.workweekOnly ? 5 : 7;
       return Array.from({ length: dayCount }, (_, index) => start.add(index, "d").format("YYYYMMDD"));

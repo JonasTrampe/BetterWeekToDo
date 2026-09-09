@@ -10,6 +10,7 @@ import nodemailer from "nodemailer";
 import { Pool } from "pg";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { z } from "zod";
+import { assertConfiguredUrl } from "./urlValidation.js";
 
 const readConfigValue = async (name) => {
   const file = process.env[`${name}_FILE`];
@@ -40,11 +41,9 @@ const config = {
   allowRegistration: process.env.ALLOW_REGISTRATION === "true",
 };
 
-for (const [name, value] of [["PUBLIC_BASE_URL", config.publicBaseUrl], ["OIDC_ISSUER_URL", config.oidcIssuer]]) {
-  if (!value) continue;
-  const url = new URL(value);
-  if (config.nodeEnv === "production" && url.protocol !== "https:") throw new Error(`${name} must use HTTPS in production`);
-  if (url.username || url.password || url.search || url.hash || url.pathname !== "/") throw new Error(`${name} must be a plain origin URL`);
+assertConfiguredUrl("PUBLIC_BASE_URL", config.publicBaseUrl, { requireHttps: config.nodeEnv === "production" });
+if (config.oidcIssuer) {
+  assertConfiguredUrl("OIDC_ISSUER_URL", config.oidcIssuer, { allowPath: true, requireHttps: config.nodeEnv === "production" });
 }
 
 if (config.oidcIssuer && (!config.oidcClientId || !config.oidcClientSecret)) {
@@ -74,7 +73,7 @@ app.use(helmet({
     },
   },
 }));
-app.use(express.json({ limit: "5mb", type: "application/json" }));
+app.use(express.json({ limit: "25mb", type: "application/json" }));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 1_000, standardHeaders: "draft-8", legacyHeaders: false }));
 
 const authLimiter = rateLimit({
@@ -376,6 +375,10 @@ if (staticRoot) {
 }
 
 app.use((error, _request, response, _next) => {
+  if (error.type === "entity.too.large") {
+    response.status(413).json({ error: "Request body exceeds the 25 MiB limit" });
+    return;
+  }
   console.error(error);
   response.status(500).json({ error: "Internal server error" });
 });

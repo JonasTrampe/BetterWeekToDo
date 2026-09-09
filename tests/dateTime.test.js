@@ -36,4 +36,11 @@ describe("dateTime compatibility adapter", () => {
     while (next.day() === 0 || next.day() === 6) next = next.add(1, "d");
     expect(next.format("YYYYMMDD")).toBe("20260907");
   });
+
+  it("finds the preceding Sunday for Sunday-first week views", () => {
+    const wednesday = dateTime("20260902", "YYYYMMDD", true);
+    expect(wednesday.subtract(wednesday.day(), "d").format("YYYYMMDD")).toBe("20260830");
+    const sunday = dateTime("20260830", "YYYYMMDD", true);
+    expect(sunday.subtract(sunday.day(), "d").format("YYYYMMDD")).toBe("20260830");
+  });
 });
