@@ -1,0 +1,93 @@
+{
+  "title": "Choose the visual world",
+  "question": "Choose the visual direction for the WeekToDoOnline redesign.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "The Quiet Time Ledger",
+      "kicker": "THE ROLL",
+      "lineage": "Personal time-block ledgers and focus journals",
+      "thesis": "A calm working ledger that makes the whole week legible without demanding attention.",
+      "palette": ["#f6f4ef", "#18242b", "#d9e7df", "#c86b4a"],
+      "materials": ["uncoated paper", "fine ruled lines"],
+      "viewport": "The current week is one continuous ledger: days as columns, morning-to-night bands as rows, and completed work visibly settling into place.",
+      "risk": "Can feel too quiet if completion states lack enough contrast and warmth.",
+      "comp": ".impeccable/mocks/decision/assigned.webp"
+    },
+    {
+      "id": "weekly-grid",
+      "label": "The Gentle Weekly Grid",
+      "kicker": "ALTERNATE",
+      "lineage": "Accessible editorial calendars and classroom week boards",
+      "thesis": "A generous grid that turns the week into a dependable visual map.",
+      "palette": ["#fbfaf7", "#243447", "#dce8f5", "#e7b85c"],
+      "materials": ["editorial paper", "soft color tabs"],
+      "viewport": "A seven-day overview with a strong today rail, four day-part bands, and completed tasks compressed but still readable.",
+      "risk": "Seven columns can become cramped on small screens without a decisive mobile transformation.",
+      "comp": ".impeccable/mocks/decision/weekly-grid.webp"
+    },
+    {
+      "id": "transit-board",
+      "label": "The Human Timetable",
+      "kicker": "ALTERNATE",
+      "lineage": "Wayfinding timetables and dependable transit boards",
+      "thesis": "The week behaves like a reliable timetable: clear departures, arrivals, and status at a glance.",
+      "palette": ["#eef3f1", "#17252b", "#2f806b", "#e3a447"],
+      "materials": ["wayfinding bands", "high-contrast status marks"],
+      "viewport": "Today anchors the screen; each day-part is a departure band with explicit current, next, and done states.",
+      "risk": "Status language could feel institutional if the copy is not humane.",
+      "comp": ".impeccable/mocks/decision/transit-board.webp"
+    },
+    {
+      "id": "library-card",
+      "label": "The Library Card Catalog",
+      "kicker": "ALTERNATE",
+      "lineage": "Library cards and quiet reference rooms",
+      "thesis": "Every task is a small reference card, organized so the mind can find its place.",
+      "palette": ["#f3efe6", "#25231f", "#b7c9c0", "#b45e45"],
+      "materials": ["card stock", "index tabs"],
+      "viewport": "The week is a shelf of day cards; opening a day reveals its four day-part drawers and a concise done archive.",
+      "risk": "Card metaphors can add interaction steps where quick capture matters.",
+      "comp": ".impeccable/mocks/decision/library-card.webp"
+    },
+    {
+      "id": "stone-garden",
+      "label": "The Focus Garden",
+      "kicker": "ALTERNATE",
+      "lineage": "Japanese dry gardens and deliberate negative space",
+      "thesis": "The week is arranged as a few intentional zones, with empty space doing useful work.",
+      "palette": ["#f4f1ea", "#29332f", "#9fb6a8", "#c17a55"],
+      "materials": ["stone texture", "raked spacing"],
+      "viewport": "A quiet weekly landscape with one active day, four temporal zones, and completed tasks receding into a low-noise margin.",
+      "risk": "Too metaphorical could reduce the concrete task clarity this audience needs.",
+      "comp": ".impeccable/mocks/decision/stone-garden.webp"
+    },
+    {
+      "id": "monospace-notebook",
+      "label": "The Monospace Notebook",
+      "kicker": "ALTERNATE",
+      "lineage": "Plain-text planners and command-line notebooks",
+      "thesis": "A precise text-first planner where structure, not decoration, carries the experience.",
+      "palette": ["#f8f8f5", "#202522", "#d6e4d8", "#bc684f"],
+      "materials": ["monospace rhythm", "check marks"],
+      "viewport": "A readable week outline with indentation for day-parts and compact inline completion states.",
+      "risk": "Can underserve users who need stronger visual grouping and orientation.",
+      "comp": ".impeccable/mocks/decision/monospace-notebook.webp"
+    },
+    {
+      "id": "canon",
+      "label": "The category standard",
+      "kicker": "CANON",
+      "thesis": "A conventional modern calendar interface, executed with exceptional clarity.",
+      "palette": ["#ffffff", "#1f2937", "#2563eb"],
+      "materials": ["clean grid", "familiar controls"],
+      "viewport": "A standard weekly calendar with a clear today highlight, day-part sections, and visible task completion.",
+      "risk": "Familiar and effective, but less distinctive and easier to make visually busy.",
+      "comp": ".impeccable/mocks/decision/canon.webp"
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "comp", "toggle": true},
+  "canon": true,
+  "steer": true
+}

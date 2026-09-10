@@ -57,7 +57,7 @@ export default {
             return this.md.render(this.desc);
         },
         goToMarkDown: function () {
-            window.open("https://commonmark.org/help/", "_blank");
+            window.open("https://commonmark.org/help/", "_blank", "noopener,noreferrer");
         },
     },
     watch: {

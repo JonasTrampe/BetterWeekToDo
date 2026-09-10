@@ -1,4 +1,5 @@
 import dbRepository from "../../repositories/dbRepository";
+import { applyTaskStatus, isTaskDone, nextTaskStatus, TASK_STATUS } from "../../helpers/taskStatus";
 
 const state = {
   todoLists: {},
@@ -26,7 +27,12 @@ const mutations = {
     state.todoLists[obj] = [];
   },
   checkTodo(state, obj) {
-    state.todoLists[obj.toDoListId][obj.index].checked = !state.todoLists[obj.toDoListId][obj.index].checked;
+    const task = state.todoLists[obj.toDoListId][obj.index];
+    applyTaskStatus(task, isTaskDone(task) ? TASK_STATUS.TODO : TASK_STATUS.DONE);
+  },
+  advanceTodoStatus(state, obj) {
+    const task = state.todoLists[obj.toDoListId][obj.index];
+    applyTaskStatus(task, nextTaskStatus(task));
   },
   moveTodoToEnd(state, obj) {
       state.todoLists[obj.toDoListId].push(state.todoLists[obj.toDoListId].splice(obj.index, 1)[0]);
@@ -46,12 +52,12 @@ const mutations = {
   },
   checkAllItems(state, toDoListId) {
     state.todoLists[toDoListId].forEach((toDo) => {
-      toDo.checked = true;
+      applyTaskStatus(toDo, TASK_STATUS.DONE);
     });
   },
   moveUndoneItems(state, obj) {
     for (let i = state.todoLists[obj.origenId].length - 1; i >= 0; i--) {
-      if (!state.todoLists[obj.origenId][i].checked) {
+      if (!isTaskDone(state.todoLists[obj.origenId][i])) {
         state.todoLists[obj.origenId][i].repeatingEvent = null;
         state.todoLists[obj.origenId][i].listId = obj.destinyId;
         state.todoLists[obj.destinyId].unshift(state.todoLists[obj.origenId][i]);

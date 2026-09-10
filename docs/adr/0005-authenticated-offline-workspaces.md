@@ -1,0 +1,7 @@
+---
+status: accepted
+---
+
+# Require authenticated creation and explicit disposition of offline workspaces
+
+An installation normally holds only the active account's workspace, which is deleted locally on sign-out, account switch, or observed server revocation. Sign-out and switching first attempt synchronization; if pending changes cannot be synchronized, the user may cancel or explicitly confirm their deletion, with an encrypted export offered before proceeding. Ordinary offline authorization lasts seven days; expiry locks the encrypted workspace without deleting unsynchronized work. A connected user may establish a planned offline period of at most thirty days only after fresh authentication, meaning password or identity-provider authentication within five minutes; device unlock cannot grant or extend it. Explicit Offline mode is network-silent even when connectivity is available. Choosing to go online requires fresh authentication and reconciliation: synchronize offline changes, discard them and download account data, or cancel and remain offline. Because a disconnected server cannot communicate revocation, local deletion occurs only after the installation receives explicit revocation; otherwise successful reauthentication unlocks and synchronizes the retained workspace. This favors account isolation and deliberate data movement over seamless but potentially surprising cross-account merging, and supersedes ADR-0004.

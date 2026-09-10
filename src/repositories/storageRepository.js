@@ -1,6 +1,12 @@
+const STORAGE_KEYS = ["config", "customTodoListIds"];
+
 export default {
     get(key) {
-        return JSON.parse(localStorage.getItem(key))
+        try {
+            return JSON.parse(localStorage.getItem(key));
+        } catch (_error) {
+            return null;
+        }
     },
     set(key, obj) {
         localStorage.setItem(key, JSON.stringify(obj));
@@ -9,17 +15,18 @@ export default {
         localStorage.removeItem(key);
     },
     clean(){
-        localStorage.clear();
+        STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
     },
     as_json(){
-        var values = {}, keys = Object.keys(localStorage), i = keys.length;
-        while (i--) {
-            values[keys[i]] = localStorage.getItem(keys[i]);
-        }
+        const values = {};
+        STORAGE_KEYS.forEach((key) => {
+            const value = localStorage.getItem(key);
+            if (value !== null) values[key] = value;
+        });
         return values;
     },
     load_json(data){
-        localStorage.setItem('config',data['config'])
-        localStorage.setItem('customTodoListIds',data['customTodoListIds'])
+        localStorage.setItem('config', data.config);
+        localStorage.setItem('customTodoListIds', data.customTodoListIds);
     },
 };

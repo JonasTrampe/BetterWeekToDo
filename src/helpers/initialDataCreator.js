@@ -1,13 +1,13 @@
 import toDoListRepository from "../repositories/toDoListRepository";
 import customToDoListIdsRepository from "../repositories/customToDoListIdsRepository";
-import moment from "moment";
+import dateTime from "./dateTime";
 
 export default {
     create(vue) {
-        // let yesterday_id = moment().subtract(1, 'd').format('YYYYMMDD');
-        let today_id = moment().format('YYYYMMDD');
-        let tomorrow_id = moment().add(1, 'd').format('YYYYMMDD');
-        let after_tomorrow_id = moment().add(2, 'd').format('YYYYMMDD');
+        // let yesterday_id = dateTime().subtract(1, 'd').format('YYYYMMDD');
+        let today_id = dateTime().format('YYYYMMDD');
+        let tomorrow_id = dateTime().add(1, 'd').format('YYYYMMDD');
+        let after_tomorrow_id = dateTime().add(2, 'd').format('YYYYMMDD');
         let custom_list1_id = create_custom_list(vue, vue.$t("generatedData.list1"));
         let custom_list2_id = create_custom_list(vue, vue.$t("generatedData.list2"));
         create_custom_list(vue, vue.$t("generatedData.list3"));
@@ -36,6 +36,7 @@ function create_todo(vue, list_id, text, checked, desc = "", subTaskList = [], c
     var newTodo = {
         text: text,
         checked: checked,
+        status: checked ? "done" : "todo",
         listId: list_id,
         desc: desc,
         subTaskList: subTaskList,

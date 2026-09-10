@@ -1,0 +1,3 @@
+# Advance the personal MLS epoch after installation revocation
+
+Revoking an authorized installation ends its sessions and synchronization access, deletes its workspace when the revocation is observed, and advances the personal MLS security group to a new epoch for future changes. Only remaining authorized installations and the recovery mechanism can restore the new MLS state. Historical content is not re-encrypted because the revoked installation may already possess both its ciphertext and old state; MLS epoch advancement provides forward protection rather than pretending to revoke knowledge already disclosed.
