@@ -15,7 +15,7 @@
             Self-hosted weekly planning with local-first storage and optional accounts.
           </p>
           <p class="mb-1 mt-3" style="font-size: 0.75rem">
-            Copyright © 2026 BetterWeekToDo contributors
+            Copyright © 2026 BetterWeekToDo and WeekToDo contributors
           </p>
           <p class="mb-1" style="font-size: 0.75rem">
             Forked from <a href="https://github.com/manuelernestog/weektodo" target="_blank" rel="noopener">WeekToDo</a> by Manuel Ernesto Garcia
