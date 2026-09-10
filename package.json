@@ -19,7 +19,7 @@
   "scripts": {
     "serve": "vite",
     "build": "vite build",
-    "lint": "eslint src tests vite.config.js",
+    "lint": "eslint src tests vite.config.mjs",
     "test": "vitest run"
   },
   "dependencies": {
